@@ -1,0 +1,126 @@
+﻿Question 1: Decision Tree (Simplified ID3)
+Implement the┬áinformation gain┬ácalculation and build a┬áone-level decision tree┬á(decision stump).
+Problem:
+You are given the┬áPlay Tennis dataset:
+Part A:
+Implement Information Gain:
+Write a Python function that:
+Takes a dataset (list of dictionaries) and a candidate attribute name ("Outlook"┬áor┬á"Humidity").
+Computes the┬áentropy┬áof the parent node.
+Computes the┬áweighted entropy┬áafter splitting on that attribute.
+Returns the┬áinformation gain.
+Decision Stump:
+Compare the gain for both attributes.
+Print which attribute is chosen as the root.
+Then, for that chosen attribute, print the┬áprediction rule┬á(e.g.,┬áIF Outlook = Sunny THEN Play = No).
+
+Print the following:
+Gain(Outlook) = 0.xxx
+Gain(Humidity) = 0.xxx
+Chosen root: Outlook
+Rules:
+- Outlook = Sunny ΓåÆ No
+- Outlook = Overcast ΓåÆ Yes
+- Outlook = Rain ΓåÆ No
+Starter code:
+import math
+def entropy(labels):
+    # labels is list like ['Yes','No','Yes']
+    pass
+def info_gain(data, attr, target='Play'):
+    # data: list of dicts
+    pass
+# Dataset
+data = [
+    {'Outlook':'Sunny', 'Humidity':'High', 'Play':'No'},
+    {'Outlook':'Sunny', 'Humidity':'Normal', 'Play':'Yes'},
+    {'Outlook':'Overcast', 'Humidity':'High', 'Play':'Yes'},
+    {'Outlook':'Rain', 'Humidity':'High', 'Play':'No'},
+    {'Outlook':'Rain', 'Humidity':'Normal', 'Play':'Yes'}
+]
+Your code must be well commented and show understanding of the task. You must write┬ácomments in your own words┬áexplaining what each part of your code does.
+Part B:
+On a┬áseparate document (PDF or handwritten scan)┬╕ show your complete┬ástep-by-step manual calculation┬áthat confirms your Python output.
+Deliverables:
+The .py file with your part A implementation
+A screenshot of your output terminal 
+The document from part B
+Question 2: Simple Perceptron (Single Neuron)
+Implement┬áforward propagation and weight update┬áusing the delta rule.
+Problem:
+You are building a┬ásingle artificial neuron┬á(perceptron) to learn the┬áAND gate:
+Part A:
+Forward Pass & Sigmoid:
+Write a python function┬áforward(x1, x2, w1, w2, bias)┬áthat:
+Computes┬áz = w1*x1 + w2*x2 + bias
+Applies┬ásigmoid:┬áoutput = 1 / (1 + math.exp(-z))
+Returns┬áoutput
+Training Loop:
+Train the perceptron for┬á100 epochs┬áusing the┬ádelta rule┬á(not backprop, just single neuron):
+error = target - output
+w1 = w1 + learning_rate * error * x1
+w2 = w2 + learning_rate * error * x2
+bias = bias + learning_rate * error
+Use:
+Initial weights:┬áw1=0.5, w2=0.5, bias=0.0
+Learning rate =┬á0.5
+After training,┬áround output to 0 or 1┬á(if output >= 0.5 ΓåÆ 1 else 0)
+Print┬áthe output after every 20 epochs so that you see the network learn:
+Eg:
+Epoch 18:
+[0,0] ΓåÆ 0.12 (0), target=0
+[0,1] ΓåÆ 0.31 (0), target=0
+[1,0] ΓåÆ 0.29 (0), target=0
+[1,1] ΓåÆ 0.68 (1), target=1
+
+After training, print a┬átruth table┬ácomparing predicted vs actual:
+Eg:
+x1 x2 | Target | Predicted
+0  0  |   0    |    0
+0  1  |   0    |    0
+1  0  |   0    |    0
+1  1  |   1    |    1
+Starter code:
+import math
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+# Training data
+X = [(0,0), (0,1), (1,0), (1,1)]
+y = [0, 0, 0, 1]
+w1, w2, bias = 0.5, 0.5, 0.0
+lr = 0.5
+XOR Gate Implementation 
+Now modify your code to train on the┬áXOR gate┬ádataset:
+Keep the┬ásame hyperparameters┬á(initial weights 0.5, 0.5; bias 0.0; learning rate 0.5; 100 epochs).
+Your code must be well commented and show understanding of the task. You must write┬ácomments in your own words┬áexplaining what each part of your code does.
+Part B:
+Answer this in a document/hand written scan:
+Did the network learn AND and XOR correctly? If not, why? Give a two-line interpretative answer for the case that fails (consider a 2D plane and use your basic geometric interpretation knowledge from Linear Algebra). In┬áexactly one line, state how you would modify the network to correctly learn the failed case if there is any.
+Deliverables:
+The .py file with your part A implementation
+A screenshot of your output terminal for AND
+A screenshot of your output terminal for XOR
+The document from part B
+--- TABLES ---
+Table 0:
+Outlook  |Humidity  |Play
+Sunny  |High  |No
+Sunny  |Normal  |Yes
+Overcast  |High  |Yes
+Rain  |High  |No
+Rain  |Normal  |Yes
+
+Table 1:
+x1  |x2  |Output (AND)
+0  |0  |0
+0  |1  |0
+1  |0  |0
+1  |1  |1
+
+Table 2:
+x1  |x2  |Output (XOR)
+0  |0  |0
+0  |1  |1
+1  |0  |1
+1  |1  |0
+
