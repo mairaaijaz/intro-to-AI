@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
                 <XAxis dataKey="session" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} label={{ value: 'Session', position: 'insideBottom', offset: -2, fill: DARK.text }} />
                 <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: number) => [v + '%', 'Accuracy']} />
+                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v + '%', 'Accuracy']} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" label={{ value: '80% target', fill: '#34d399', fontSize: 11, position: 'insideTopRight' }} />
                 <Area type="monotone" dataKey="accuracy" stroke="#7c5cfc" strokeWidth={2.5} fill="url(#accGrad)" dot={{ fill: '#7c5cfc', r: 4 }} />
               </AreaChart>
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
                 <XAxis dataKey="session" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} />
                 <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} tickFormatter={v => v + 'd'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: number) => [v + ' days', 'Avg Half-Life']} />
+                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v + ' days', 'Avg Half-Life']} />
                 <Line type="monotone" dataKey="halfLife" stroke="#38bdf8" strokeWidth={2.5} dot={{ fill: '#38bdf8', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
                 <XAxis dataKey="category" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 11, angle: -35, textAnchor: 'end' }} interval={0} />
                 <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: number, _: string, p: {payload:{attempts:number}}) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} />
+                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" />
                 <Bar dataKey="accuracy" fill="#7c5cfc" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
                   label={{ value: 'Days since review', position: 'insideBottom', offset: -2, fill: DARK.text }} />
                 <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]}
                   tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: number, name: string) => [v + '%', name]} />
+                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any, name: any) => [v + '%', name]} />
                 <Legend wrapperStyle={{ color: DARK.text, fontSize: '0.78rem', paddingTop: '10px' }} />
                 {sample.map((w, i) => (
                   <Line key={w.wordId} type="monotone" dataKey={w.translit}
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
               <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
               <XAxis dataKey="range" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 11 }} />
               <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} />
-              <Tooltip contentStyle={DARK.tooltip} formatter={(v: number) => [v, 'Words']} />
+              <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v, 'Words']} />
               <Bar dataKey="count" fill="#e040fb" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
