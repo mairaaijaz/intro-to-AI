@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SettingsProvider } from "@/hooks/useSettings";
 
 export const metadata: Metadata = {
   title: "ARABOT — Arabic Vocabulary HLR",
@@ -11,10 +12,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <div className="orb orb1" />
-        <div className="orb orb2" />
-        <div className="orb orb3" />
-        {children}
+        <SettingsProvider>
+          <div className="orb orb1" />
+          <div className="orb orb2" />
+          <div className="orb orb3" />
+          {children}
+        </SettingsProvider>
       </body>
     </html>
   );

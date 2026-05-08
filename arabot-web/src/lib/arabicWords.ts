@@ -5,6 +5,12 @@ export interface ArabicWord {
   category: string;
 }
 
+export function formatArabic(text: string, showDiacritics: boolean): string {
+  if (showDiacritics) return text;
+  // Remove Arabic diacritical marks (Tashkeel/Harakat)
+  return text.replace(/[\u064B-\u065F\u0670]/g, '');
+}
+
 export const ARABIC_VOCABULARY: ArabicWord[] = [
   // Greetings (10)
   { arabic: "مرحبا",        translit: "marhaban",        english: "hello",              category: "greetings" },

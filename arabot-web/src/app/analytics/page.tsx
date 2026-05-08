@@ -8,14 +8,24 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
+import { useSettings } from '@/hooks/useSettings';
+
 const DARK = {
-  text:    '#9090b0',
+  text:    '#94a3b8',
   grid:    'rgba(255,255,255,0.06)',
-  tooltip: { background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#e8e8f0' },
+  tooltip: { background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc' },
+};
+
+const LIGHT = {
+  text:    '#475569',
+  grid:    'rgba(0,0,0,0.1)',
+  tooltip: { background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '10px', color: '#0f172a' },
 };
 
 export default function AnalyticsPage() {
   const { data, loaded, resetData } = useStudentData();
+  const { theme } = useSettings();
+  const chartColors = theme === 'dark' ? DARK : LIGHT;
 
   if (!loaded || !data) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -130,12 +140,12 @@ export default function AnalyticsPage() {
                     <stop offset="95%" stopColor="#7c5cfc" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
-                <XAxis dataKey="session" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} label={{ value: 'Session', position: 'insideBottom', offset: -2, fill: DARK.text }} />
-                <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v + '%', 'Accuracy']} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="session" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} label={{ value: 'Session', position: 'insideBottom', offset: -2, fill: chartColors.text }} />
+                <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
+                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any) => [v + '%', 'Accuracy']} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" label={{ value: '80% target', fill: '#34d399', fontSize: 11, position: 'insideTopRight' }} />
-                <Area type="monotone" dataKey="accuracy" stroke="#7c5cfc" strokeWidth={2.5} fill="url(#accGrad)" dot={{ fill: '#7c5cfc', r: 4 }} />
+                <Area type="monotone" dataKey="accuracy" stroke="#9d174d" strokeWidth={2.5} fill="url(#accGrad)" dot={{ fill: '#9d174d', r: 4 }} />
               </AreaChart>
             </ResponsiveContainer>
           </section>
@@ -147,10 +157,10 @@ export default function AnalyticsPage() {
             <h2 style={{ fontWeight: 700, marginBottom: '20px', fontSize: '1.1rem' }}>Average Half-Life Growth (Memory Improvement)</h2>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={sessionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
-                <XAxis dataKey="session" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} />
-                <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} tickFormatter={v => v + 'd'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v + ' days', 'Avg Half-Life']} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="session" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} />
+                <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} tickFormatter={v => v + 'd'} />
+                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any) => [v + ' days', 'Avg Half-Life']} />
                 <Line type="monotone" dataKey="halfLife" stroke="#38bdf8" strokeWidth={2.5} dot={{ fill: '#38bdf8', r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -163,12 +173,12 @@ export default function AnalyticsPage() {
             <h2 style={{ fontWeight: 700, marginBottom: '20px', fontSize: '1.1rem' }}>Accuracy by Category</h2>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={categoryData} margin={{ bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
-                <XAxis dataKey="category" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 11, angle: -35, textAnchor: 'end' }} interval={0} />
-                <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="category" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 11, angle: -35, textAnchor: 'end' }} interval={0} />
+                <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
+                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" />
-                <Bar dataKey="accuracy" fill="#7c5cfc" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="accuracy" fill="#f97316" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </section>
@@ -183,13 +193,13 @@ export default function AnalyticsPage() {
             </p>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={forgetData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
-                <XAxis dataKey="day" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }}
-                  label={{ value: 'Days since review', position: 'insideBottom', offset: -2, fill: DARK.text }} />
-                <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} domain={[0, 100]}
+                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+                <XAxis dataKey="day" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }}
+                  label={{ value: 'Days since review', position: 'insideBottom', offset: -2, fill: chartColors.text }} />
+                <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} domain={[0, 100]}
                   tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={DARK.tooltip} formatter={(v: any, name: any) => [v + '%', name]} />
-                <Legend wrapperStyle={{ color: DARK.text, fontSize: '0.78rem', paddingTop: '10px' }} />
+                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any, name: any) => [v + '%', name]} />
+                <Legend wrapperStyle={{ color: chartColors.text, fontSize: '0.78rem', paddingTop: '10px' }} />
                 {sample.map((w, i) => (
                   <Line key={w.wordId} type="monotone" dataKey={w.translit}
                     stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />
@@ -207,11 +217,11 @@ export default function AnalyticsPage() {
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={buckets}>
-              <CartesianGrid strokeDasharray="3 3" stroke={DARK.grid} />
-              <XAxis dataKey="range" stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 11 }} />
-              <YAxis stroke={DARK.text} tick={{ fill: DARK.text, fontSize: 12 }} />
-              <Tooltip contentStyle={DARK.tooltip} formatter={(v: any) => [v, 'Words']} />
-              <Bar dataKey="count" fill="#e040fb" radius={[6, 6, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
+              <XAxis dataKey="range" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 11 }} />
+              <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} />
+              <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any) => [v, 'Words']} />
+              <Bar dataKey="count" fill="#9333ea" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </section>

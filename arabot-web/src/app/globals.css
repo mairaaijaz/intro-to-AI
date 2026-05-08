@@ -7,13 +7,33 @@
   --surface:   #12121f;
   --surface2:  #1a1a2e;
   --border:    rgba(255,255,255,0.08);
-  --accent:    #7c5cfc;
-  --accent2:   #e040fb;
+  --accent:    #9d174d; /* maroon-ish */
+  --accent2:   #f97316; /* orange */
+  --accent3:   #9333ea; /* purple */
   --gold:      #f5c842;
   --green:     #34d399;
   --red:       #f87171;
   --text:      #e8e8f0;
-  --muted:     #6b6b8a;
+  --muted:     #94a3b8;
+  --nav-bg:    rgba(10,10,20,0.85);
+  --glass-bg:  rgba(255,255,255,0.04);
+}
+
+.light {
+  --bg:        #f8fafc;
+  --surface:   #ffffff;
+  --surface2:  #f1f5f9;
+  --border:    rgba(0,0,0,0.1);
+  --accent:    #9d174d;
+  --accent2:   #f97316;
+  --accent3:   #9333ea;
+  --gold:      #d97706;
+  --green:     #059669;
+  --red:       #dc2626;
+  --text:      #0f172a;
+  --muted:     #475569;
+  --nav-bg:    rgba(255,255,255,0.85);
+  --glass-bg:  rgba(255,255,255,0.7);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +54,7 @@ html, body {
 
 /* Glassmorphism card */
 .glass {
-  background: rgba(255,255,255,0.04);
+  background: var(--glass-bg);
   border: 1px solid var(--border);
   backdrop-filter: blur(12px);
   border-radius: 16px;
@@ -59,8 +79,8 @@ html, body {
   animation: drift 12s ease-in-out infinite alternate;
 }
 .orb1 { width:500px; height:500px; background:var(--accent);  top:-100px; left:-150px; }
-.orb2 { width:400px; height:400px; background:var(--accent2); bottom:-100px; right:-100px; animation-delay: 3s; }
-.orb3 { width:300px; height:300px; background:#1a66ff; top:40%; left:40%; animation-delay: 6s; }
+.orb2 { width:400px; height:400px; background:var(--accent3); bottom:-100px; right:-100px; animation-delay: 3s; }
+.orb3 { width:300px; height:300px; background:var(--accent2); top:40%; left:40%; animation-delay: 6s; }
 
 @keyframes drift {
   from { transform: translate(0,0) scale(1); }
@@ -99,7 +119,7 @@ html, body {
 
 /* Input */
 .input-field {
-  background: rgba(255,255,255,0.05);
+  background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 18px;
@@ -112,7 +132,7 @@ html, body {
 }
 .input-field:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124,92,252,0.2);
+  box-shadow: 0 0 0 3px rgba(157, 23, 77, 0.2);
 }
 .input-field::placeholder { color: var(--muted); }
 
@@ -131,7 +151,7 @@ html, body {
 .progress-bar {
   height: 6px;
   border-radius: 4px;
-  background: rgba(255,255,255,0.08);
+  background: var(--border);
   overflow: hidden;
 }
 .progress-fill {
@@ -155,7 +175,6 @@ html, body {
 .result-correct { color: var(--green); }
 .result-wrong   { color: var(--red); }
 
-/* Nav link */
 .nav-link {
   color: var(--muted);
   text-decoration: none;
@@ -165,8 +184,8 @@ html, body {
   border-radius: 8px;
   transition: all 0.15s;
 }
-.nav-link:hover  { color: var(--text); background: rgba(255,255,255,0.06); }
-.nav-link.active { color: var(--text); background: rgba(124,92,252,0.15); }
+.nav-link:hover  { color: var(--text); background: var(--border); }
+.nav-link.active { color: var(--accent); background: rgba(157, 23, 77, 0.1); }
 
 /* Scrollbar */
 ::-webkit-scrollbar       { width: 6px; }
@@ -181,7 +200,7 @@ html, body {
 }
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(124,92,252,0); }
-  50%       { box-shadow: 0 0 20px 4px rgba(124,92,252,0.3); }
+  50%       { box-shadow: 0 0 20px 4px rgba(157, 23, 77, 0.3); }
 }
 .fade-in { animation: fadeInUp 0.4s ease forwards; }
 .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
@@ -194,8 +213,8 @@ html, body {
 /* Table */
 .word-table { width: 100%; border-collapse: collapse; }
 .word-table th { padding: 10px 14px; text-align: left; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border); }
-.word-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.88rem; }
-.word-table tr:hover td { background: rgba(255,255,255,0.03); }
+.word-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+.word-table tr:hover td { background: var(--surface2); }
 
 @media (max-width: 768px) {
   .stat-number { font-size: 1.5rem; }

@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { useStudentData } from '@/hooks/useStudentData';
+import { useSettings } from '@/hooks/useSettings';
 import { predictRecall, lagDays } from '@/lib/hlr';
-import { CATEGORIES } from '@/lib/arabicWords';
+import { CATEGORIES, formatArabic } from '@/lib/arabicWords';
 
 export default function WordListPage() {
   const { data, loaded } = useStudentData();
+  const { showDiacritics } = useSettings();
   const [search,   setSearch]   = useState('');
   const [category, setCategory] = useState('all');
   const [sortBy,   setSortBy]   = useState<'alpha' | 'recall' | 'halflife' | 'accuracy'>('alpha');
@@ -73,7 +75,7 @@ export default function WordListPage() {
             value={category}
             onChange={e => setCategory(e.target.value)}
             style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
               borderRadius: '10px', padding: '10px 14px', color: 'var(--text)',
               fontSize: '0.9rem', cursor: 'pointer', outline: 'none',
             }}>
@@ -84,7 +86,7 @@ export default function WordListPage() {
             value={sortBy}
             onChange={e => setSortBy(e.target.value as typeof sortBy)}
             style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
               borderRadius: '10px', padding: '10px 14px', color: 'var(--text)',
               fontSize: '0.9rem', cursor: 'pointer', outline: 'none',
             }}>
@@ -119,7 +121,7 @@ export default function WordListPage() {
                 return (
                   <tr key={w.wordId}>
                     <td>
-                      <span className="arabic" style={{ fontSize: '1.4rem' }}>{w.arabic}</span>
+                      <span className="arabic" style={{ fontSize: '1.4rem' }}>{formatArabic(w.arabic, showDiacritics)}</span>
                     </td>
                     <td style={{ color: 'var(--muted)', fontStyle: 'italic' }}>{w.translit}</td>
                     <td style={{ fontWeight: 600 }}>{w.english}</td>

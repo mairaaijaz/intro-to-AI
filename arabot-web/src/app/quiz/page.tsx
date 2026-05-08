@@ -4,6 +4,8 @@ import Navbar from '@/components/Navbar';
 import { useStudentData } from '@/hooks/useStudentData';
 import { selectWords } from '@/lib/hlr';
 import { WordMemory } from '@/lib/hlr';
+import { useSettings } from '@/hooks/useSettings';
+import { formatArabic } from '@/lib/arabicWords';
 
 type Phase = 'setup' | 'question' | 'feedback' | 'results';
 
@@ -15,6 +17,7 @@ interface SessionResult {
 
 export default function QuizPage() {
   const { data, loaded, recordAttempt, finishSession } = useStudentData();
+  const { showDiacritics } = useSettings();
 
   const [phase,       setPhase]       = useState<Phase>('setup');
   const [sessionSize, setSessionSize] = useState(10);
@@ -171,7 +174,7 @@ export default function QuizPage() {
               </div>
 
               <div className="arabic" style={{ fontSize: '4rem', marginBottom: '12px', lineHeight: 1 }}>
-                {current.arabic}
+                {formatArabic(current.arabic, showDiacritics)}
               </div>
               <div style={{ color: 'var(--muted)', fontSize: '1rem', marginBottom: '8px' }}>
                 {current.translit}
@@ -228,7 +231,7 @@ export default function QuizPage() {
               </div>
 
               <div className="arabic" style={{ fontSize: '3rem', margin: '16px 0 8px' }}>
-                {current.arabic}
+                {formatArabic(current.arabic, showDiacritics)}
               </div>
               <div style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>
                 = {lastResult.correct}
@@ -284,7 +287,7 @@ export default function QuizPage() {
                 }}>
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                     <span>{r.recalled ? '✅' : '❌'}</span>
-                    <span className="arabic" style={{ fontSize: '1.4rem' }}>{r.word.arabic}</span>
+                    <span className="arabic" style={{ fontSize: '1.4rem' }}>{formatArabic(r.word.arabic, showDiacritics)}</span>
                     <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{r.word.english}</span>
                   </div>
                   {!r.recalled && (
