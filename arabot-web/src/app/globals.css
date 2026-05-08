@@ -3,7 +3,7 @@
 @import "tailwindcss";
 
 :root {
-  --bg:        #0a0a14;
+  --bg:        linear-gradient(135deg, #150518, #0a0a14, #180805);
   --surface:   #12121f;
   --surface2:  #1a1a2e;
   --border:    rgba(255,255,255,0.08);
@@ -20,7 +20,7 @@
 }
 
 .light {
-  --bg:        #f8fafc;
+  --bg:        linear-gradient(135deg, #fce7f3, #f8fafc, #ffedd5);
   --surface:   #ffffff;
   --surface2:  #f1f5f9;
   --border:    rgba(0,0,0,0.1);
@@ -40,6 +40,7 @@
 
 html, body {
   background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
