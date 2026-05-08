@@ -45,9 +45,14 @@ export default function QuizPage() {
     const wm = words[idx];
     const userTrimmed = answer.trim().toLowerCase();
     const correctAnswers = wm.english.toLowerCase().split(/[\/,]/).map(s => s.trim());
-    const recalled = correctAnswers.some(a =>
-      userTrimmed === a || userTrimmed.includes(a) || a.includes(userTrimmed)
-    ) && userTrimmed.length > 0;
+    const recalled = correctAnswers.some(a => {
+      if (userTrimmed === a) return true;
+      // Allow substring matches only if the user typed most of the word (prevent single letter bypass)
+      if (userTrimmed.length >= Math.min(3, a.length - 1)) {
+        return userTrimmed.includes(a) || a.includes(userTrimmed);
+      }
+      return false;
+    }) && userTrimmed.length > 0;
 
     recordAttempt(wm.wordId, recalled);
     setResults(prev => [...prev, { word: wm, recalled, userAnswer: answer.trim() }]);
