@@ -17,9 +17,9 @@ const DARK = {
 };
 
 const LIGHT = {
-  text:    '#475569',
-  grid:    'rgba(0,0,0,0.1)',
-  tooltip: { background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', borderRadius: '10px', color: '#0f172a' },
+  text:    '#cbd5e1',
+  grid:    'rgba(255,255,255,0.1)',
+  tooltip: { background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc' },
 };
 
 export default function AnalyticsPage() {

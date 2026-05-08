@@ -3,9 +3,9 @@
 @import "tailwindcss";
 
 :root {
-  --bg:        linear-gradient(135deg, #150518, #0a0a14, #180805);
+  --bg:        linear-gradient(to bottom, #1e133d 0%, #62366b 40%, #f56c36 80%, #160404 100%);
   --surface:   #12121f;
-  --surface2:  #1a1a2e;
+  --surface2:  rgba(255,255,255,0.06);
   --border:    rgba(255,255,255,0.08);
   --accent:    #9d174d; /* maroon-ish */
   --accent2:   #f97316; /* orange */
@@ -13,27 +13,27 @@
   --gold:      #f5c842;
   --green:     #34d399;
   --red:       #f87171;
-  --text:      #e8e8f0;
-  --muted:     #94a3b8;
-  --nav-bg:    rgba(10,10,20,0.85);
-  --glass-bg:  rgba(255,255,255,0.04);
+  --text:      #ffffff;
+  --muted:     #e2e8f0;
+  --nav-bg:    rgba(30, 19, 61, 0.85);
+  --glass-bg:  rgba(255,255,255,0.06);
 }
 
 .light {
-  --bg:        linear-gradient(135deg, #fce7f3, #f8fafc, #ffedd5);
-  --surface:   #ffffff;
-  --surface2:  #f1f5f9;
-  --border:    rgba(0,0,0,0.1);
-  --accent:    #9d174d;
-  --accent2:   #f97316;
-  --accent3:   #9333ea;
-  --gold:      #d97706;
-  --green:     #059669;
-  --red:       #dc2626;
-  --text:      #0f172a;
-  --muted:     #475569;
-  --nav-bg:    rgba(255,255,255,0.85);
-  --glass-bg:  rgba(255,255,255,0.7);
+  --bg:        linear-gradient(to bottom, #040b26 0%, #2d4786 50%, #e992a6 85%, #293864 100%);
+  --surface:   rgba(255,255,255,0.05);
+  --surface2:  rgba(255,255,255,0.1);
+  --border:    rgba(255,255,255,0.15);
+  --accent:    #e879f9;
+  --accent2:   #38bdf8;
+  --accent3:   #818cf8;
+  --gold:      #fbbf24;
+  --green:     #34d399;
+  --red:       #f87171;
+  --text:      #ffffff;
+  --muted:     #e2e8f0;
+  --nav-bg:    rgba(4, 11, 38, 0.85);
+  --glass-bg:  rgba(255,255,255,0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
