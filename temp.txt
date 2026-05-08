@@ -1,0 +1,172 @@
+ 0 0.2 0.4 0.6 0.8 1
+ 0 1 2 3 4 5 6 7!!!(a) Ebbinghaus model ( h=1)
+ 0 0.2 0.4 0.6 0.8 1
+ 0 5 10 15 20 25 30✖✖✖✖✖✖ (b) 30-day student-word learning trace and predicted forgetting curve
+Figure 4: Forgetting curves. (a) Predicted recall rate as a function of lag time ∆and half-life h=1.
+(b) Example student-word learning trace over 30 days: marks the observed recall rate pfor each
+practice session, and half-life regression aims to ﬁt model predictions ˆpΘ(dashed lines) to these points.
+In practice, we found it useful to optimize for
+the half-life hin addition to the observed recall
+ratep. Since we do not know the “true” half-life
+of a given word in the student’s memory — this
+is a hypothetical construct — we approximate it
+algebraically from (1) using pand∆. We solve
+forh=−∆
+log2(p)and use the ﬁnal loss function:
+/lscript(; Θ) = (p−ˆpΘ)2+α(h−ˆhΘ)2+λ/bardblΘ/bardbl2
+2,
+whereαis a parameter to control the relative im-
+portance of the half-life term in the overall train-
+ing objective function. Since /lscriptis smooth with re-
+spect to Θ, we can ﬁt the weights to student-word
+learning traces using gradient descent. See the Ap-
+pendix for more details on our training and opti-
+mization procedures.
+3.4 Feature Sets
+In this work, we focused on features that were eas-
+ily instrumented and available in the production
+Duolingo system, without adding latency to the
+student’s user experience. These features fall into
+two broad categories:
+•Interaction features : a set of counters sum-
+marizing each student’s practice history with
+each word (lexeme tag). These include the
+total number of times a student has seen the
+wordxn, the number of times it was correctly
+recalledx⊕, and the number of times incor-
+rectx/circleminus. These are intended to help the model
+make more personalized predictions.
+•Lexeme tag features : a large, sparse set of
+indicator variables, one for each lexeme tag
+in the system (about 20k in total). These are
+intended to capture the inherent difﬁculty of
+each particular word (lexeme tag).recall rate lag (days) feature vector x
+p (⊕/n) ∆xnx⊕x/circleminusxˆetre.V.GER
+1.0 (3/3) 0.6 3 2 1 1
+0.5 (2/4) 1.7 6 5 1 1
+1.0 (3/3) 0.7 10 7 3 1
+0.8 (4/5) 4.7 13 10 3 1
+0.5 (1/2) 13.5 18 14 4 1
+1.0 (3/3) 2.6 20 15 5 1
+Table 1: Example training instances. Each row
+corresponds to a data point in Figure 4(b) above,
+which is for a student learning the French word
+´etant (lexeme tag ˆetre.V.GER).
+To be more concrete, imagine that the trace in
+Figure 4(b) is for a student learning the French
+word ´etant (lexeme tag ˆetre.V.GER). Table 1 shows
+what/angbracketleftp,∆,x/angbracketrightwould look like for each session
+in the student’s history with that word. The inter-
+action features increase monotonically5over time,
+andxˆetre.V.GERis the only lexeme feature to “ﬁre”
+for these instances (it has value 1, all other lexeme
+features have value 0). The model also includes a
+bias weight (intercept) not shown here.
+4 Experiments
+In this section, we compare variants of HLR with
+other spaced repetition algorithms in the context of
+Duolingo. First, we evaluate methods against his-
+torical log data, and analyze trained model weights
+for insight. We then describe two controlled user
+experiments where we deployed HLR as part of
+the student model in the production system.
+5Note that in practice, we found that using the square root
+of interaction feature counts (e.g.,√x⊕) yielded better re-
+sults than the raw counts shown here.1852
+Model MAE ↓AUC↑COR h↑
+HLR 0.128 * 0.538* 0.201 *
+HLR -lex 0.128 * 0.537* 0.160*
+HLR -h 0.350 0.528* -0.143 *
+HLR -lex-h 0.350 0.528* -0.142 *
+Leitner 0.235 0.542 *-0.098 *
+Pimsleur 0.445 0.510* -0.132 *
+LR 0.211 0.513* n/a
+LR -lex 0.212 0.514* n/a
+Constant ¯p=0.859 0.175 n/a n/a
+Table 2: Evaluation results using historical log
+data (see text). Arrows indicate whether lower ( ↓)
+or higher (↑) scores are better. The best method
+for each metric is shown in bold, and statistically
+signiﬁcant effects ( p<0.001) are marked with *.
+4.1 Historical Log Data Evaluation
+We collected two weeks of Duolingo log data,
+containing 12.9 million student-word lesson and
+practice session traces similar to Table 1 (for all
+students in all courses). We then compared three
+categories of spaced repetition algorithms:
+•Half-life regression (HLR) , our model from
+§3.3. For ablation purposes, we consider four
+variants: with and without lexeme features
+(-lex), as well as with and without the half-
+life term in the loss function (- h).
+•Leitner and Pimsleur , two established base-
+lines that are special cases of HLR, using
+ﬁxed weights. See the Appendix for a deriva-
+tion of the model weights we used.
+•Logistic regression (LR) , a standard machine
+learning6baseline. We evaluate two variants:
+with and without lexeme features (-lex).
+We used the ﬁrst 1 million instances of the data
+to tune the parameters for our training algorithm.
+After trying a handful of values, we settled on
+λ=0.1,α=0.01, and learning rate η=0.001.
+We used these same training parameters for HLR
+and LR experiments (the Leitner and Pimsleur
+models are ﬁxed and do not require training).
+6For LR models, we include the lag time x∆as an addi-
+tional feature, since — unlike HLR — it isn’t explicitly ac-
+counted for in the model. We experimented with polynomial
+and exponential transformations of this feature, as well, but
+found the raw lag time to work best.Table 2 shows the evaluation results on the full
+data set of 12.9 million instances, using the ﬁrst
+90% for training and remaining 10% for testing.
+We consider several different evaluation measures
+for a comprehensive comparison:
+•Mean absolute error (MAE) measures how
+closely predictions resemble their observed
+outcomes:1
+D/summationtextD
+i=1|p−ˆpΘ|i. Since the
+strength meters in Duolingo’s interface are
+based on model predictions, we use MAE as
+a measure of prediction quality.
+•Area under the ROC curve (AUC) — or the
+Wilcoxon rank-sum test — is a measure of
+ranking quality. Here, it represents the proba-
+bility that a model ranks a random correctly-
+recalled word as more likely than a random
+incorrectly-recalled word. Since our model is
+used to prioritize words for practice, we use
+AUC to help evaluate these rankings.
+•Half-life correlation (COR h)is the Spearman
+rank correlation between ˆhΘand the alge-
+braic estimate hdescribed in§3.3. We use
+this as another measure of ranking quality.
+For all three metrics, HLR with lexeme tag fea-
+tures is the best (or second best) approach, fol-
+lowed closely by HLR -lex (no lexeme tags). In
+fact, these are the only two approaches with MAE
+lower than a baseline constant prediction of the av-
+erage recall rate in the training data (Table 2, bot-
+tom row). These HLR variants are also the only
+methods with positive COR h, although this seems
+reasonable since they are the only two to directly
+optimize for it. While lexeme tag features made
+limited impact, the hterm in the HLR loss func-
+tion is clearly important: MAE more than doubles
+without it, and the - hvariants are generally worse
+than the other baselines on at least one metric.
+As stated in§3.2, Leitner was the spaced repeti-
+tion algorithm used in Duolingo’s production stu-
+dent model at the time of this study. The Leitner
+method did yield the highest AUC7values among
+the algorithms we tried. However, the top two
+HLR variants are not far behind, and they also re-
+duce MAE compared to Leitner by least 45%.
+7AUC of 0.5 implies random guessing (Fawcett, 2006),
+so the AUC values here may seem low. This is due in part
+to an inherently noisy prediction task, but also to a range re-
+striction: ¯p=0.859, so most words are recalled correctly
+and predictions tend to be high. Note that all reported AUC
+values are statistically signiﬁcantly better than chance using
+a Wilcoxon rank sum test with continuity correction.1853

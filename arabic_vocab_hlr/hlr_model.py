@@ -101,7 +101,8 @@ class HLRModel:
         p_obs   = 1.0 if recalled else 0.0
         p_hat   = self.predict_recall(n_correct, n_wrong, lag_days)
         h_hat   = self.predict_half_life(n_correct, n_wrong)
-        h_tilde = self.empirical_half_life(max(p_hat, 0.01), max(lag_days, 1e-5))
+        p_obs_h = 0.9 if recalled else 0.1
+        h_tilde = self.empirical_half_life(p_obs_h, max(lag_days, 1e-5))
 
         x = self._features(n_correct, n_wrong)
         ln2 = math.log(2.0)

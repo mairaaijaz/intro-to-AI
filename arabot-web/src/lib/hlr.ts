@@ -100,7 +100,8 @@ export function sgdUpdate(
   const pObs  = recalled ? 1.0 : 0.0;
   const pHat  = predictRecall(theta, nCorrect, nWrong, lagDays);
   const hHat  = predictHalfLife(theta, nCorrect, nWrong);
-  const hTilde= empiricalHalfLife(Math.max(pHat, 0.01), Math.max(lagDays, 1e-5));
+  const pObsForH = recalled ? 0.9 : 0.1;
+  const hTilde= empiricalHalfLife(pObsForH, Math.max(lagDays, 1e-5));
 
   // Gradient components
   const pGradCommon = 2 * (pHat - pObs) * (-LN2 * (lagDays / hHat) * LN2 * pHat);
