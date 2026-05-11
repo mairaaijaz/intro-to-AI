@@ -7,7 +7,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { useSettings } from '@/hooks/useSettings';
 
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
                 <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
                 <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" />
-                <Bar dataKey="accuracy" radius={[6, 6, 0, 0]} onClick={(data) => setSelectedCategory(data.category)} cursor="pointer">
+                <Bar dataKey="accuracy" radius={[6, 6, 0, 0]} onClick={(data: any) => setSelectedCategory(data?.payload?.category || data?.category)} cursor="pointer">
                   {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.category === selectedCategory ? '#fb923c' : '#f97316'} opacity={selectedCategory && entry.category !== selectedCategory ? 0.6 : 1} />
                   ))}
