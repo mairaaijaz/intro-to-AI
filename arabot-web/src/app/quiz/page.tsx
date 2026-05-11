@@ -137,9 +137,9 @@ export default function QuizPage() {
                   onChange={e => setSelectedCategory(e.target.value)}
                   style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `2px solid var(--border)`, cursor: 'pointer', outline: 'none', width: '100%', fontSize: '1rem' }}
                 >
-                  <option value="all">Random (All Categories)</option>
+                  <option value="all" style={{ background: '#1e133d', color: '#fff' }}>Random (All Categories)</option>
                   {categories.map(c => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c} style={{ background: '#1e133d', color: '#fff' }}>{c}</option>
                   ))}
                 </select>
               </div>
