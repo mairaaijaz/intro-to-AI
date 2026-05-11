@@ -6,6 +6,7 @@ import { selectWords } from '@/lib/hlr';
 import { WordMemory } from '@/lib/hlr';
 import { useSettings } from '@/hooks/useSettings';
 import { formatArabic } from '@/lib/arabicWords';
+import { LEVELS, Level } from '@/lib/levels';
 
 type Phase = 'setup' | 'question' | 'feedback' | 'results';
 
@@ -15,46 +16,79 @@ interface SessionResult {
   userAnswer: string;
 }
 
+const PRAISE_CORRECT = ['Amazing! 🌟', 'You got it! 🎉', 'Fantastic! 🚀', 'Superstar! ⭐', 'Brilliant! 🧠', 'Wow! 👏', 'Keep it up! 💪', 'Excellent! 🥇'];
+const PRAISE_WRONG   = ['Almost there! 🌈', 'Try again soon! 💙', 'Don\'t give up! 🌟', 'You\'re learning! 🌱', 'Next time! 💪'];
+const CONFETTI_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9f43','#c084fc','#f472b6'];
+
+function randomFrom<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function useLocalLevelProgress() {
+  const KEY = 'arabot_level_progress';
+  const [maxUnlocked, setMaxUnlocked] = useState<number>(1);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) setMaxUnlocked(JSON.parse(saved).maxUnlocked ?? 1);
+    } catch { /* ignore */ }
+  }, []);
+
+  function unlockNext(current: number) {
+    const next = Math.min(current + 1, 20);
+    setMaxUnlocked(prev => {
+      const updated = Math.max(prev, next);
+      localStorage.setItem(KEY, JSON.stringify({ maxUnlocked: updated }));
+      return updated;
+    });
+  }
+
+  return { maxUnlocked, unlockNext };
+}
+
 export default function QuizPage() {
   const { data, loaded, recordAttempt, finishSession } = useStudentData();
   const { showDiacritics } = useSettings();
+  const { maxUnlocked, unlockNext } = useLocalLevelProgress();
 
   const [phase,       setPhase]       = useState<Phase>('setup');
-  const [sessionSize, setSessionSize] = useState<number | 'all'>(10);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [chosenLevel, setChosenLevel] = useState<Level | null>(null);
   const [words,       setWords]       = useState<WordMemory[]>([]);
   const [idx,         setIdx]         = useState(0);
   const [answer,      setAnswer]      = useState('');
   const [results,     setResults]     = useState<SessionResult[]>([]);
-  const [lastResult,  setLastResult]  = useState<{ recalled: boolean; correct: string } | null>(null);
+  const [lastResult,  setLastResult]  = useState<{ recalled: boolean; correct: string; praise: string } | null>(null);
+  const [levelUp,     setLevelUp]     = useState(false);
+  const [confetti,    setConfetti]    = useState<{ id: number; color: string; x: number; delay: number }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const categories = data ? Array.from(new Set(Object.values(data.memories).map(w => w.category))).sort() : [];
 
   useEffect(() => {
     if (phase === 'question') inputRef.current?.focus();
   }, [phase, idx]);
 
-  function startSession() {
-    if (!data) return;
-    
-    let pool = data.memories;
-    if (selectedCategory !== 'all') {
-      pool = Object.fromEntries(Object.entries(data.memories).filter(([_, w]) => w.category === selectedCategory));
-    }
-    const poolSize = Object.keys(pool).length;
-    if (poolSize === 0) {
-      alert('No words found in this category.');
-      return;
-    }
-    const actualSize = sessionSize === 'all' ? poolSize : Math.min(sessionSize, poolSize);
+  function spawnConfetti() {
+    const pieces = Array.from({ length: 22 }, (_, i) => ({
+      id: i, color: randomFrom(CONFETTI_COLORS),
+      x: Math.random() * 100, delay: Math.random() * 0.6,
+    }));
+    setConfetti(pieces);
+    setTimeout(() => setConfetti([]), 1800);
+  }
 
-    const selected = selectWords(pool, data.theta, actualSize, 0.3);
+  function startLevel(level: Level) {
+    if (!data) return;
+    const pool = Object.fromEntries(
+      Object.entries(data.memories).filter(([_, w]) => level.categories.includes(w.category))
+    );
+    const poolSize = Object.keys(pool).length;
+    if (poolSize === 0) { alert('No words found for this level yet!'); return; }
+    const selected = selectWords(pool, data.theta, Math.min(level.sessionSize, poolSize), 0.3);
+    setChosenLevel(level);
     setWords(selected);
     setIdx(0);
     setResults([]);
     setAnswer('');
     setLastResult(null);
+    setLevelUp(false);
     setPhase('question');
   }
 
@@ -65,27 +99,31 @@ export default function QuizPage() {
     const correctAnswers = wm.english.toLowerCase().split(/[\/,]/).map(s => s.trim());
     const recalled = correctAnswers.some(a => {
       if (userTrimmed === a) return true;
-      // Allow substring matches only if the user typed most of the word (prevent single letter bypass)
-      if (userTrimmed.length >= Math.min(3, a.length - 1)) {
-        return userTrimmed.includes(a) || a.includes(userTrimmed);
-      }
+      if (userTrimmed.length >= Math.min(3, a.length - 1)) return userTrimmed.includes(a) || a.includes(userTrimmed);
       return false;
     }) && userTrimmed.length > 0;
 
     recordAttempt(wm.wordId, recalled);
     setResults(prev => [...prev, { word: wm, recalled, userAnswer: answer.trim() }]);
-    setLastResult({ recalled, correct: wm.english });
+    setLastResult({
+      recalled,
+      correct: wm.english,
+      praise: recalled ? randomFrom(PRAISE_CORRECT) : randomFrom(PRAISE_WRONG),
+    });
+    if (recalled) spawnConfetti();
     setPhase('feedback');
   }
 
   function nextWord() {
     if (idx + 1 >= words.length) {
-      const correct = results.filter(r => r.recalled).length + (lastResult?.recalled ? 0 : 0);
-      // Count from results already recorded
-      finishSession(
-        results.filter(r => r.recalled).length,
-        results.length
-      );
+      const correctCount = results.filter(r => r.recalled).length + (lastResult?.recalled ? 1 : 0);
+      finishSession(results.filter(r => r.recalled).length, results.length);
+      const acc = correctCount / words.length;
+      if (acc >= 0.8 && chosenLevel) {
+        setLevelUp(true);
+        unlockNext(chosenLevel.id);
+        spawnConfetti();
+      }
       setPhase('results');
     } else {
       setIdx(i => i + 1);
@@ -102,140 +140,150 @@ export default function QuizPage() {
     }
   }
 
-  const current    = words[idx];
+  const current        = words[idx];
   const sessionCorrect = results.filter(r => r.recalled).length;
 
-  // ── Setup ──────────────────────────────────────────────────────────────────
   if (!loaded || !data) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'var(--muted)' }}>Loading…</span>
+      <span style={{ color: 'var(--muted)', fontSize: '1.2rem' }}>Loading… 🌟</span>
     </div>
   );
 
+  // ── TIER labels for the grid ─────────────────────────────────────────────
+  const tiers = [
+    { label: '⭐ Beginner', range: [1, 4]  },
+    { label: '🌍 My World', range: [5, 8]  },
+    { label: '🏘️ Community', range: [9, 12] },
+    { label: '📚 Learning', range: [13, 16] },
+    { label: '🏆 Advanced', range: [17, 20] },
+  ];
+
   return (
     <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh' }}>
-      <Navbar />
-      <main style={{ maxWidth: '680px', margin: '0 auto', padding: '40px 20px' }}>
+      {/* Confetti overlay */}
+      {confetti.length > 0 && (
+        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 999 }}>
+          {confetti.map(c => (
+            <div key={c.id} className="confetti-piece" style={{
+              background: c.color, left: `${c.x}%`, top: 0,
+              animationDelay: `${c.delay}s`,
+              borderRadius: c.id % 3 === 0 ? '50%' : '2px',
+              width: 8 + (c.id % 5) * 2, height: 8 + (c.id % 4) * 2,
+            }} />
+          ))}
+        </div>
+      )}
 
-        {/* ── SETUP ── */}
+      <Navbar />
+      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 20px' }}>
+
+        {/* ── SETUP: Level Select ── */}
         {phase === 'setup' && (
           <div className="fade-in">
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '8px' }}>
-              Ready to <span className="gradient-text">Quiz?</span>
-            </h1>
-            <p style={{ color: 'var(--muted)', marginBottom: '36px' }}>
-              Words are selected using HLR — the most-forgotten words come first.
-            </p>
-
-            <div className="glass" style={{ padding: '32px', marginBottom: '24px' }}>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '16px' }}>
-                  Category
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={e => setSelectedCategory(e.target.value)}
-                  style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `2px solid var(--border)`, cursor: 'pointer', outline: 'none', width: '100%', fontSize: '1rem' }}
-                >
-                  <option value="all" style={{ background: '#1e133d', color: '#fff' }}>Random (All Categories)</option>
-                  {categories.map(c => (
-                    <option key={c} value={c} style={{ background: '#1e133d', color: '#fff' }}>{c}</option>
-                  ))}
-                </select>
-              </div>
-
-              <label style={{ display: 'block', fontWeight: 600, marginBottom: '16px' }}>
-                Session size
-              </label>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {[5, 10, 20, 'all'].map(n => (
-                  <button key={n}
-                    onClick={() => setSessionSize(n as any)}
-                    style={{
-                      padding: '10px 24px',
-                      borderRadius: '10px',
-                      border: `2px solid ${sessionSize === n ? 'var(--accent)' : 'var(--border)'}`,
-                      background: sessionSize === n ? 'rgba(124,92,252,0.15)' : 'transparent',
-                      color: sessionSize === n ? 'var(--text)' : 'var(--muted)',
-                      fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'all 0.15s',
-                    }}>
-                    {n === 'all' ? 'All words' : `${n} words`}
-                  </button>
-                ))}
-              </div>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '4rem', marginBottom: '8px' }} className="float">🌟</div>
+              <h1 style={{ fontSize: '2.4rem', fontWeight: 900, marginBottom: '8px', color: 'var(--text)' }}>
+                Choose your <span className="gradient-text">Level!</span>
+              </h1>
+              <p style={{ color: 'var(--muted)', fontSize: '1rem' }}>
+                Complete a level with ⭐ 80%+ to unlock the next one!
+              </p>
             </div>
 
-            <div className="glass" style={{ padding: '20px', marginBottom: '32px', fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7 }}>
-              <strong style={{ color: 'var(--text)' }}>HLR Scheduling:</strong>{' '}
-              30% new words + 70% review words with lowest predicted recall probability p = 2^(-Δ/h)
-            </div>
-
-            <button className="btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '16px' }}
-              onClick={startSession}>
-              Start Session →
-            </button>
+            {tiers.map(tier => (
+              <div key={tier.label} style={{ marginBottom: '28px' }}>
+                <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '12px', color: 'var(--muted)', letterSpacing: '0.04em' }}>
+                  {tier.label}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  {LEVELS.filter(l => l.id >= tier.range[0] && l.id <= tier.range[1]).map(level => {
+                    const isLocked    = level.id > maxUnlocked;
+                    const isCompleted = level.id < maxUnlocked;
+                    const isCurrent   = level.id === maxUnlocked;
+                    return (
+                      <div
+                        key={level.id}
+                        className={`level-card ${isLocked ? 'locked' : ''} ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`}
+                        style={{ background: level.color }}
+                        onClick={() => !isLocked && startLevel(level)}
+                      >
+                        <div style={{ fontSize: '2rem', marginBottom: '4px' }}>
+                          {isLocked ? '🔒' : isCompleted ? '✅' : level.emoji}
+                        </div>
+                        <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text)', marginBottom: '2px' }}>
+                          Lvl {level.id}
+                        </div>
+                        <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#555' }}>
+                          {level.name}
+                        </div>
+                        <div style={{ fontSize: '0.68rem', color: '#777', marginTop: '3px', lineHeight: 1.3 }}>
+                          {level.sessionSize} words
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* ── QUESTION ── */}
         {phase === 'question' && current && (
           <div className="fade-in" onKeyDown={handleKey}>
-            {/* Progress */}
+            {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                {idx + 1} / {words.length}
+              <span style={{
+                padding: '6px 14px', borderRadius: '30px', fontWeight: 800, fontSize: '0.82rem',
+                background: chosenLevel?.color || '#ffb3ba', color: '#333',
+              }}>
+                {chosenLevel?.emoji} {chosenLevel?.name} — Level {chosenLevel?.id}
               </span>
-              <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
-                ✅ {sessionCorrect} correct
+              <span style={{ color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 700 }}>
+                ✅ {sessionCorrect} / {idx + 1}
               </span>
             </div>
-            <div className="progress-bar" style={{ marginBottom: '32px' }}>
-              <div className="progress-fill" style={{ width: `${((idx) / words.length) * 100}%` }} />
+            <div className="progress-bar" style={{ marginBottom: '28px' }}>
+              <div className="progress-fill" style={{ width: `${(idx / words.length) * 100}%` }} />
             </div>
 
             {/* Word card */}
-            <div className="glass" style={{ padding: '48px 32px', textAlign: 'center', marginBottom: '32px' }}>
+            <div className="glass" style={{ padding: '48px 32px', textAlign: 'center', marginBottom: '28px', background: 'rgba(255,255,255,0.88)' }}>
               <div style={{
-                display: 'inline-block', padding: '4px 12px', borderRadius: '20px',
-                background: 'rgba(124,92,252,0.15)', color: 'var(--accent)',
-                fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '0.06em', marginBottom: '24px',
+                display: 'inline-block', padding: '5px 14px', borderRadius: '30px', marginBottom: '20px',
+                background: '#fff3e0', color: '#e67e22', fontWeight: 800, fontSize: '0.78rem', textTransform: 'uppercase',
               }}>
-                {current.category}
+                📂 {current.category}
               </div>
-
-              <div className="arabic" style={{ fontSize: '4rem', marginBottom: '12px', lineHeight: 1 }}>
+              <div className="arabic" style={{ fontSize: '5rem', marginBottom: '10px', lineHeight: 1, color: '#1a1a2e' }}>
                 {formatArabic(current.arabic, showDiacritics)}
               </div>
-              <div style={{ color: 'var(--muted)', fontSize: '1rem', marginBottom: '8px' }}>
+              <div style={{ color: 'var(--muted)', fontSize: '1.05rem', marginBottom: '6px', fontWeight: 600 }}>
                 {current.translit}
               </div>
-
-              {/* HLR info */}
-              <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', marginTop: '20px', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                <span>attempts: {current.nTotal}</span>
-                <span>half-life: {current.halfLife.toFixed(1)}d</span>
-                <span>accuracy: {current.nTotal > 0 ? ((current.nCorrect / current.nTotal) * 100).toFixed(0) + '%' : '—'}</span>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginTop: '16px', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                <span>🔁 {current.nTotal} attempts</span>
+                <span>⏱ {current.halfLife.toFixed(1)}d half-life</span>
+                <span>🎯 {current.nTotal > 0 ? ((current.nCorrect / current.nTotal) * 100).toFixed(0) + '%' : '—'}</span>
               </div>
             </div>
 
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '8px', fontWeight: 500 }}>
-                Type the English meaning:
+              <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 700 }}>
+                ✏️ What does this mean in English?
               </label>
               <input
                 ref={inputRef}
                 className="input-field"
                 value={answer}
                 onChange={e => setAnswer(e.target.value)}
-                placeholder="Your answer…"
+                placeholder="Type your answer here…"
                 autoComplete="off"
               />
             </div>
-
-            <button className="btn-primary" style={{ width: '100%', fontSize: '1rem', padding: '14px' }}
+            <button className="btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '16px' }}
               onClick={submitAnswer} disabled={answer.trim().length === 0}>
-              Check Answer →
+              Check Answer ✔
             </button>
           </div>
         )}
@@ -243,43 +291,36 @@ export default function QuizPage() {
         {/* ── FEEDBACK ── */}
         {phase === 'feedback' && lastResult && current && (
           <div className="fade-in" onKeyDown={handleKey} tabIndex={0} style={{ outline: 'none' }}>
-            <div className="progress-bar" style={{ marginBottom: '32px' }}>
+            <div className="progress-bar" style={{ marginBottom: '28px' }}>
               <div className="progress-fill" style={{ width: `${((idx + 1) / words.length) * 100}%` }} />
             </div>
 
             <div className="glass" style={{
               padding: '48px 32px', textAlign: 'center', marginBottom: '24px',
-              borderColor: lastResult.recalled ? 'rgba(52,211,153,0.3)' : 'rgba(248,113,113,0.3)',
+              background: lastResult.recalled ? 'rgba(220,252,231,0.9)' : 'rgba(255,235,235,0.9)',
+              border: `3px solid ${lastResult.recalled ? '#86efac' : '#fca5a5'}`,
             }}>
-              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>
-                {lastResult.recalled ? '✅' : '❌'}
+              <span className="celebrate-emoji">{lastResult.recalled ? '🌟' : '💙'}</span>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px', marginTop: '12px',
+                color: lastResult.recalled ? '#15803d' : '#dc2626' }}>
+                {lastResult.praise}
               </div>
-              <div style={{
-                fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px',
-                color: lastResult.recalled ? 'var(--green)' : 'var(--red)',
-              }}>
-                {lastResult.recalled ? 'Correct!' : 'Incorrect'}
-              </div>
-
-              <div className="arabic" style={{ fontSize: '3rem', margin: '16px 0 8px' }}>
+              <div className="arabic" style={{ fontSize: '4rem', margin: '16px 0 8px', color: '#1a1a2e' }}>
                 {formatArabic(current.arabic, showDiacritics)}
               </div>
-              <div style={{ fontSize: '1.2rem', fontWeight: 600, color: 'var(--text)', marginBottom: '4px' }}>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#1a1a2e', marginBottom: '4px' }}>
                 = {lastResult.correct}
               </div>
-              <div style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{current.translit}</div>
-
-              <div style={{ marginTop: '20px', padding: '12px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', fontSize: '0.8rem', color: 'var(--muted)' }}>
-                New half-life: <strong style={{ color: 'var(--text)' }}>{current.halfLife.toFixed(2)}d</strong>
-                {' '}— Model updated via SGD
+              <div style={{ color: 'var(--muted)', fontSize: '0.9rem', fontWeight: 600 }}>{current.translit}</div>
+              <div style={{ marginTop: '16px', padding: '10px 16px', background: 'rgba(255,255,255,0.6)', borderRadius: '12px', fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600 }}>
+                Memory updated! Half-life: <strong style={{ color: '#1a1a2e' }}>{current.halfLife.toFixed(2)}d</strong>
               </div>
             </div>
 
-            <button className="btn-primary" style={{ width: '100%', fontSize: '1rem', padding: '14px' }}
-              onClick={nextWord}>
-              {idx + 1 >= words.length ? 'See Results →' : 'Next Word →'}
+            <button className="btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '16px' }} onClick={nextWord}>
+              {idx + 1 >= words.length ? 'See Results 🏁' : 'Next Word →'}
             </button>
-            <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.8rem', marginTop: '10px' }}>
+            <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.8rem', marginTop: '10px', fontWeight: 600 }}>
               Press Enter to continue
             </p>
           </div>
@@ -288,25 +329,54 @@ export default function QuizPage() {
         {/* ── RESULTS ── */}
         {phase === 'results' && (
           <div className="fade-in">
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '8px' }}>
-              Session <span className="gradient-text">Complete!</span>
-            </h1>
+            {levelUp ? (
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <span style={{ fontSize: '5rem' }} className="bounce-in">🏆</span>
+                <h1 style={{ fontSize: '2.4rem', fontWeight: 900, marginBottom: '8px', marginTop: '12px' }}>
+                  Level <span className="gradient-text">Complete!</span>
+                </h1>
+                <p style={{ color: 'var(--muted)', fontSize: '1rem', fontWeight: 600 }}>
+                  You unlocked Level {Math.min((chosenLevel?.id ?? 0) + 1, 20)}! 🎉
+                </p>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                <h1 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '8px' }}>
+                  Session <span className="gradient-text">Done!</span>
+                </h1>
+                <p style={{ color: 'var(--muted)', fontSize: '0.95rem', fontWeight: 600 }}>
+                  You need 80%+ to unlock the next level 💪
+                </p>
+              </div>
+            )}
 
-            <div className="glass" style={{ padding: '32px', textAlign: 'center', marginBottom: '24px' }}>
-              <div style={{ fontSize: '4rem', fontWeight: 800, marginBottom: '4px' }}>
-                <span style={{ color: sessionCorrect / results.length >= 0.8 ? 'var(--green)' : sessionCorrect / results.length >= 0.5 ? 'var(--gold)' : 'var(--red)' }}>
-                  {(sessionCorrect / results.length * 100).toFixed(0)}%
-                </span>
-              </div>
-              <div style={{ color: 'var(--muted)', marginBottom: '24px' }}>
-                {sessionCorrect} / {results.length} correct
-              </div>
-
-              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button className="btn-primary" onClick={() => setPhase('setup')}>
-                  New Session →
-                </button>
-              </div>
+            <div className="glass" style={{ padding: '32px', textAlign: 'center', marginBottom: '24px', background: 'rgba(255,255,255,0.88)' }}>
+              {(() => {
+                const totalCorrect = results.filter(r => r.recalled).length;
+                const pct = results.length > 0 ? (totalCorrect / results.length * 100).toFixed(0) : '0';
+                const num = Number(pct);
+                return (
+                  <>
+                    <div style={{ fontSize: '5rem', fontWeight: 900, marginBottom: '4px',
+                      color: num >= 80 ? '#15803d' : num >= 50 ? '#d97706' : '#dc2626' }}>
+                      {pct}%
+                    </div>
+                    <div style={{ color: 'var(--muted)', marginBottom: '24px', fontWeight: 600 }}>
+                      {totalCorrect} / {results.length} correct
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                      {chosenLevel && (
+                        <button className="btn-primary" onClick={() => startLevel(chosenLevel)}>
+                          Try Again 🔄
+                        </button>
+                      )}
+                      <button className="btn-ghost" onClick={() => setPhase('setup')}>
+                        Choose Level 📋
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Results list */}
@@ -314,15 +384,16 @@ export default function QuizPage() {
               {results.map((r, i) => (
                 <div key={i} className="glass" style={{
                   padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  borderColor: r.recalled ? 'rgba(52,211,153,0.2)' : 'rgba(248,113,113,0.15)',
+                  background: r.recalled ? 'rgba(220,252,231,0.7)' : 'rgba(255,235,235,0.7)',
+                  border: `1.5px solid ${r.recalled ? '#86efac' : '#fca5a5'}`,
                 }}>
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                    <span>{r.recalled ? '✅' : '❌'}</span>
-                    <span className="arabic" style={{ fontSize: '1.4rem' }}>{formatArabic(r.word.arabic, showDiacritics)}</span>
-                    <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{r.word.english}</span>
+                    <span style={{ fontSize: '1.3rem' }}>{r.recalled ? '✅' : '❌'}</span>
+                    <span className="arabic" style={{ fontSize: '1.5rem', color: '#1a1a2e' }}>{formatArabic(r.word.arabic, showDiacritics)}</span>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 600 }}>{r.word.english}</span>
                   </div>
                   {!r.recalled && (
-                    <span style={{ color: 'var(--red)', fontSize: '0.8rem' }}>
+                    <span style={{ color: '#dc2626', fontSize: '0.8rem', fontWeight: 600 }}>
                       you: {r.userAnswer || '(blank)'}
                     </span>
                   )}

@@ -147,7 +147,7 @@ export default function WordListPage() {
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{ width: '50px', height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: '50px', height: '5px', background: 'rgba(0,0,0,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ width: `${rec * 100}%`, height: '100%', background: rec > 0.7 ? 'var(--green)' : rec > 0.4 ? 'var(--gold)' : 'var(--red)', borderRadius: '3px' }} />
                         </div>
                         <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{(rec * 100).toFixed(0)}%</span>

@@ -9,25 +9,15 @@ import {
 } from 'recharts';
 import { useState } from 'react';
 
-import { useSettings } from '@/hooks/useSettings';
-
-const DARK = {
-  text:    '#94a3b8',
-  grid:    'rgba(255,255,255,0.06)',
-  tooltip: { background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc' },
-};
-
-const LIGHT = {
-  text:    '#cbd5e1',
-  grid:    'rgba(255,255,255,0.1)',
-  tooltip: { background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#f8fafc' },
+const chartColors = {
+  text:    '#6b7280',
+  grid:    'rgba(0,0,0,0.06)',
+  tooltip: { background: '#ffffff', border: 'none', borderRadius: '14px', color: '#1a1a2e', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', fontWeight: 700 },
 };
 
 export default function AnalyticsPage() {
   const { data, loaded, resetData } = useStudentData();
-  const { theme } = useSettings();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const chartColors = theme === 'dark' ? DARK : LIGHT;
 
   if (!loaded || !data) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -93,7 +83,7 @@ export default function AnalyticsPage() {
     }
     return row;
   });
-  const COLORS = ['#7c5cfc','#e040fb','#34d399','#f5c842','#fb923c','#38bdf8','#f472b6','#a78bfa'];
+  const COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9f43','#c084fc','#f472b6','#22c55e'];
 
   // ── Recall distribution ───────────────────────────────────────────────────
   const buckets = Array.from({ length: 10 }, (_, i) => ({
@@ -133,11 +123,11 @@ export default function AnalyticsPage() {
         {/* Summary stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: '12px', marginBottom: '36px' }}>
           {[
-            { label: 'Overall Accuracy', value: overallAcc, color: '#7c5cfc' },
-            { label: 'Avg Half-Life',    value: avgHL,       color: '#38bdf8' },
-            { label: 'Mastered (≥80%)',  value: mastered,    color: '#34d399' },
-            { label: 'Words Seen',       value: seen.length, color: '#e040fb' },
-            { label: 'Total Attempts',   value: stats.totalAttempts, color: '#f5c842' },
+            { label: 'Overall Accuracy', value: overallAcc, color: '#ff6b6b' },
+            { label: 'Avg Half-Life',    value: avgHL,       color: '#4d96ff' },
+            { label: 'Mastered (≥80%)',  value: mastered,    color: '#6bcb77' },
+            { label: 'Words Seen',       value: seen.length, color: '#c084fc' },
+            { label: 'Total Attempts',   value: stats.totalAttempts, color: '#f5a623' },
           ].map(s => (
             <div key={s.label} className="glass stat-card">
               <span className="stat-number" style={{ color: s.color, fontSize: '1.6rem' }}>{s.value}</span>
