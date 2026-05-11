@@ -300,8 +300,11 @@ export default function QuizPage() {
               background: lastResult.recalled ? 'rgba(220,252,231,0.9)' : 'rgba(255,235,235,0.9)',
               border: `3px solid ${lastResult.recalled ? '#86efac' : '#fca5a5'}`,
             }}>
-              <span className="celebrate-emoji">{lastResult.recalled ? '🌟' : '💙'}</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px', marginTop: '12px',
+              <span className="celebrate-emoji">{lastResult.recalled ? '🌟' : '💔'}</span>
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: lastResult.recalled ? '#15803d' : '#dc2626', textTransform: 'uppercase', marginBottom: '4px' }}>
+                {lastResult.recalled ? 'Correct!' : 'Oops! Incorrect'}
+              </div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '8px', marginTop: '4px',
                 color: lastResult.recalled ? '#15803d' : '#dc2626' }}>
                 {lastResult.praise}
               </div>
