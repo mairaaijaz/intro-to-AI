@@ -44,20 +44,42 @@ export default function AnalyticsPage() {
     halfLife: parseFloat((stats.halfLifeHistory[i] ?? 0).toFixed(2)),
   }));
 
-  // ── Category accuracy ─────────────────────────────────────────────────────
-  const catMap: Record<string, { correct: number; total: number }> = {};
+  // ── Category accuracy and Word details ─────────────────────────────────────
+  const catMap: Record<string, {
+    correct: number;
+    total: number;
+    words: Array<{
+      id: string;
+      arabic: string;
+      translit: string;
+      accuracy: number;
+      halfLife: number;
+      attempts: number;
+      nTotal: number;
+    }>
+  }> = {};
   for (const w of memories) {
-    if (!catMap[w.category]) catMap[w.category] = { correct: 0, total: 0 };
+    if (!catMap[w.category]) catMap[w.category] = { correct: 0, total: 0, words: [] };
     catMap[w.category].correct += w.nCorrect;
     catMap[w.category].total   += w.nTotal;
+    catMap[w.category].words.push({
+      id: w.wordId,
+      arabic: w.arabic,
+      translit: w.translit,
+      accuracy: w.nTotal > 0 ? parseFloat((w.nCorrect / w.nTotal * 100).toFixed(1)) : 0,
+      halfLife: parseFloat(w.halfLife.toFixed(1)),
+      attempts: w.nTotal,
+      nTotal: w.nTotal,
+    });
   }
   const categoryData = Object.entries(catMap)
     .map(([cat, v]) => ({
       category: cat,
       accuracy: v.total > 0 ? parseFloat((v.correct / v.total * 100).toFixed(1)) : 0,
       attempts: v.total,
+      words: v.words.sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts)
     }))
-    .sort((a, b) => b.accuracy - a.accuracy);
+    .sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts);
 
   // ── Forgetting curves (sample 8 seen words) ───────────────────────────────
   const sample = seen.slice(0, 8);
@@ -181,6 +203,54 @@ export default function AnalyticsPage() {
                 <Bar dataKey="accuracy" fill="#f97316" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </section>
+        )}
+
+        {/* ── Word Stats by Category ────────────────────────────────────────── */}
+        {categoryData.length > 0 && (
+          <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
+            <h2 style={{ fontWeight: 700, marginBottom: '20px', fontSize: '1.1rem' }}>Word Performance by Category</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {categoryData.map(c => (
+                <div key={c.category} style={{ border: `1px solid ${chartColors.grid}`, borderRadius: '12px', overflow: 'hidden' }}>
+                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px 20px', borderBottom: `1px solid ${chartColors.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{c.category}</h3>
+                    <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
+                      <span><span style={{ color: 'var(--muted)' }}>Accuracy:</span> {c.accuracy}%</span>
+                      <span><span style={{ color: 'var(--muted)' }}>Attempts:</span> {c.attempts}</span>
+                    </div>
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: `1px solid ${chartColors.grid}` }}>
+                          <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Arabic</th>
+                          <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Transliteration</th>
+                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Accuracy</th>
+                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Half-life</th>
+                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Attempts</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {c.words.map(w => (
+                          <tr key={w.id} style={{ borderBottom: `1px solid ${chartColors.grid}` }}>
+                            <td style={{ padding: '12px 20px', fontSize: '1.1rem', fontFamily: 'var(--font-arabic)' }}>{w.arabic}</td>
+                            <td style={{ padding: '12px 20px', color: 'var(--text)' }}>{w.translit}</td>
+                            <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? (w.accuracy >= 80 ? '#34d399' : w.accuracy < 50 ? '#f87171' : 'var(--text)') : 'var(--muted)' }}>
+                              {w.nTotal > 0 ? `${w.accuracy}%` : '—'}
+                            </td>
+                            <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? '#38bdf8' : 'var(--muted)' }}>
+                              {w.nTotal > 0 ? `${w.halfLife.toFixed(1)}d` : '—'}
+                            </td>
+                            <td style={{ padding: '12px 20px', textAlign: 'right', color: 'var(--muted)' }}>{w.attempts}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
