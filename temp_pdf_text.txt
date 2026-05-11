@@ -1,0 +1,303 @@
+1 
+ Name:            Roll No:  
+INSTITUTE OF BUSINESS ADMINISTRATION  
+Department of Computer Science, Karachi  
+Course: Introduction to Artificial Intelligence  (CSE-307) 
+Instructor:  Dr. Syed Ali Raza, Sumaira Saeed , and Tahir Syed  
+Final  Exam  – Spring 202 5 
+Duration: 3 hours         Total marks: 100 
+Instructions:  Provide answers in the space provided after each question . You may use an extra sheet for rough work, but 
+not for providing answers. Please answer using a pen only (pencils are not permitted).  
+CONSTRAINT SATISFACTION PROBLEM  
+ 
+1) [10 marks]  Color the map with 5 variables , V1, V2, V3, V4, V5 , using the c olors Red, Green, 
+Blue, and Yellow . Write below the first solution found by the Backtracking algorithm. Write 
+the color assigned to each variable.  
+a. Domain: {Red, Green, Blue, Yellow}  
+b. Constraints: Adjacent variables must have different colors  
+c. Variable order: V3, V5, V1, V2, V4  
+d. Color order: Yellow, Green, Blue, Red  
+ 
+Answer : 
+V3 V5 V1 V2 V4 
+     
+ 
+ 
+2) [8 marks] For the map coloring problem of Australia using three colors (Red, 
+Green, and Blue), you are given the starting domains of the six variables (the 
+connected states of Australia  shown in the constraint graph here ) in the table 
+below. A dash ( -) in the domain values mean that the color is unavailable for that 
+variable. For example, R is unavailable for NT, NSW, and SA. You task is to 
+apply the forward checking method in filtering and identify for the following two 
+scenarios which variable’s domain shrinks to an empty set first (i.e., the 
+backtracking is needed) and after which variable’s assignment (i.e., which variable’s assignment has c aused the 
+other variable’s domain to become empty). The order of picking colors for a variable’s assignment is also given 
+for each scenario.  
+ 
+variables  WA NT Q NSW  V SA 
+Starting 
+Domains  R G B - G B R G B - G B R G B - G B 
+ 
+ 
+Scenario 
+no. Variable Orderings  Color assignment 
+ordering  Variable with the 
+empty domain  Variable whose assignment 
+caused the empty domain  
+1 Q, NSW, SA, WA, V, NT  G, B, R  
+ 
+2 WA, V, NT, Q, NSW, SA  B, G, R   
+ 
+ 
+ 
+
+2 
+ 3) [6 marks ] Consider the map coloring  problem of Australia  using three colors (Red, Green, and Blue), as discussed 
+in the previous question . You are given the starting domains of the six variables ( shown in the constraint graph  
+above ) in the table below.  A dash ( -) in the domain values mean that the color is unavailable for that variable.  For 
+example, R and B are unavailable for NT at the start.  
+For the following sequence of arcs, you r task is to identify for which arc making it consistent causes the domain of 
+another variable reduce to an empty set. Also, which variable’s domain gets empty first?  
+ 
+Arc WA NT Q NSW  V SA 
+Starting domains  R G - - G - R G - - G B R G B R - - 
+ 
+Arcs to check in this s equence:  
+Arc1  Arc2 Arc3 Arc4 Arc5 Arc6 Arc7 Arc8 Arc9 Arc1 0 
+SA → WA V → SA WA → NT SA → Q SA → NT WA → SA Q → NT Q → SA WA → NT WA → NT 
+ 
+Answers:  
+Write a rc which makes a variable’s domain empty :          
+ 
+Write v ariable whose domain becomes empty :           
+ 
+UNSUPERVISED LEARNING  
+ 
+4) [10 marks]  For the data given here (9 instances of X and Y coordinates), apply the 
+K-means algorithm for one iteration using K=3. Note: one iteration means finding 
+the new centroids once. Use instance 3, 6, and 8 as the initial centroids. Use 
+Manhattan distance as t he distance measure.  
+Manhattan Distance = | x 1 − x 2 | + | y 1 − y 2 |  
+ 
+a. Write below the updated centroids after the first iteration of K -means.  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+b. Calculate the Within cluster sum of squares (WSS)  for K=3 (using the clusters and the centroids found 
+above ) using the Euclidian  distance  (not the Manhattan dis tance ). Note, WSS is also known as the sum of 
+squared error  (SSE) . 
+Answer: ____________ ___________________________________________________________  
+ 
+c. If you are given that the WSS  for K=1 (all points in one cluster)  is 242 , then mention w hich K value is 
+better and why?  
+ 
+Answer:              
+ 
+                             
+ 
+ 
+5) [2 marks] Explain why the notion of proximity (closeness or distance) between examples plays a central role in the 
+K-means algorithm . Updated centroids  X Y 
+C1   
+C2   
+C3   
+Instance  X Y 
+1 4 7 
+2 -1 3 
+3 2 -2 
+4 5 1 
+5 7 6 
+6 -5 -2 
+7 3 6 
+8 -3 -1 
+9 6 0 
+ 
+3 
+  
+Answer:               
+ 
+               
+ 
+6) [2 marks] Which of the following best explains why K -means clustering tends to form hyperspherical clusters?  
+Note, a hypersphere is a sphere in higher dimensions  (4D or higher) . Circle the correct option.  
+ 
+A. It uses cosine similarity, which groups points based on angles rather than distance.  
+B. It minimizes Manhattan distance between data points and cluster centers.  
+C. It uses Euclidean distance and assumes that clusters are distributed symmetrically around a centroid.  
+D. It explicitly models non -convex and elliptical shapes using covariance matrices.  
+ 
+SUPERVISED LEARNING  
+ 
+7) [10 marks ] The table below shows fictional statistics of student grades (pass and fail) in an AI course. There are 
+eight examples with three characteristics found important in determining the success of a student, namely Game 
+Skills, Favorite Campus and Favorite Drin k. Assume we induce a Decision Tree (partially) using the Information 
+Gain as the measure of impurity.  Hint: Information gain  = (information before split) – (information after split)  
+ 
+𝐸𝑛𝑡𝑟𝑜𝑝𝑦(𝑡)=−∑𝑝(𝑗|𝑡)log𝑝(𝑗|𝑡)
+𝑗 
+ 
+Example  Game Skills  Favorite Campus  Favorite Drink  Grade  
+X1 Expert  Main  Next Fail 
+X2 Novice  Main  Fizup  Fail 
+X3 Novice  City Next Pass  
+X4 Novice  City Fizup  Fail 
+X5 Expert  City Fizup  Fail 
+X6 Novice  City Pakola  Pass  
+X7 Novice  Main  Next Fail 
+X8 Expert  City Next Pass  
+ 
+Answer the following questions.  
+ 
+What is the Information Gain for th e attr ibute Game Skills ?  
+What is the Information Gain for th e attr ibute Favorite Campus ?  
+What is the Information Gain for th e attr ibute Favorite Drink ?  
+Which attribute is selected at the root?  
+Which branch or branches of the root node has a decision (Pass 
+or Fail) on it (i.e., leaf node) ?  
+ 
+8) [8 marks] Consider the fully connected feed -forward neural network given below . Here, a node represents a single 
+neuron.  
+ 
+• The initial wright values are 𝑤1𝑖= 0.20, 𝑤1𝑗= 0.10,  𝑤1𝑘= 0.30, 𝑤2𝑖= -0.10, 𝑤2𝑗= -0.10, 𝑤2𝑘= 0.20, 𝑤𝑖𝑥= 0.10, 
+𝑤𝑗𝑥= 0.50, 𝑤𝑘𝑥= 0.20. 
+4 
+ • Input is node1 = 0.4 and node2 =  0.6, and the target value is T=0.65 . The learning rate (r) is 0.5. For all the 
+calculations, use values till 5 decimal places.  
+• Use the sigmoid function as the activation, f(x) = 1 / (1 + 𝑒−𝑥).  
+• The formula for the error at node x is Error(x) = (T – Ox) O x (1 – Ox) where O x is the output of node x. 
+• The formula to compute new weight between two nodes a and b is,  
+o wab = w ab (current) + wab 
+o where,  wab = r x Error(b) * O a  
+ 
+ 
+Answer the following questions:  
+What is the output at node x?  
+What is the error at node x?  
+What is the updated value  of weight 𝐰𝒌𝒙?  
+ 
+9) [2 marks ] We train models using a dataset, but we ultimately want them to work well on data they haven’t seen. 
+What do we call this goal, and why is it central to the learning process?  Answer briefly . 
+ 
+Answer:               
+ 
+               
+ 
+10) [2 marks ] When a decision tree algorithm has two possible ways to split the data, how does it decide which split 
+to choose?  Circle the right option . 
+ 
+A. It chooses the split that maximizes the number of branches.  
+B. It chooses the split that creates the smallest number of examples in each branch.  
+C. It chooses the split that results in the most homogeneous (pure) branches.  
+D. It chooses the split that minimizes the total number of features used.  
+ 
+11) [2 marks] What is the main goal of cross -validation?  
+ 
+Answer:               
+ 
+               
+ 
+ 
+ 
+ 
+
+5 
+ 12) [6 marks] Consider the following confusion matrix of a predictive model to detect spam e -mail. Find the values  of 
+the following measures : 
+ 
+Precision   
+Recall   
+F-measure  (F1)  
+ 
+KNOWLEDGE REPRESENTATION (LOGICAL REASONING)  
+ 
+13) [2 marks ] What is the main limitation of the propositional logic?  
+ 
+Answer:               
+             
+               
+ 
+14) [8 marks ] Assume that several facts of the following types are already defined using First Order Logic:  
+male(X)  
+female(X)  
+parent(X, Y)  
+For example, male(albert). female(elizabeth). parent(edward, albert). Etc.  
+Using ONLY the facts defined above, define rules in First Order Logic (FOL) using the  Prolog for the following 
+relations:  
+ 
+mother(X , Y)  
+daughter(X , Y)  
+sibling(X , Y)  
+grandMother(X , Y)  
+      
+15) [8 marks] Validate the following argument using propositional logic. Clearly state whether the argument is valid or 
+invalid. Also, mention the rule of inference used.   
+  
+a. ARGUMENT#1:  
+Premise 1: If I study, I will pass.  
+Premise 2: I did not pass.  
+Conclusion: Therefore, I did not study.   
+      
+Inferencing rule ?  
+Valid  / invalid ?  
+  PREDICTION  
+  Spam  Not Spam  
+ACTUAL  Spam  560 40 
+Not Spam  50 50 
+ 
+6 
+  
+ 
+b. ARGUMENT#2:  
+Premise 1: If it is winter, then it is cold.  
+Premise 2: It is cold.  
+Conclusion: Therefore, it is winter.  
+ 
+Inferencing rule ?  
+Valid / invalid?   
+ 
+KNOWLEDGE REPRESENTATION (PROBABILISTIC REASONING ) 
+16) [4 marks] For the Bayesian Network  (BN)  given here,  assume each variable is binary .  
+Write the joint probability equation based on the structure of the graph.  
+Answer :              
+ 
+M W P(S | M,W)  
+T T 0.3 
+T F 0.6 
+F T 0.7 
+F F 0.1 
+ 
+ 
+ 
+In the two  tables above, you are given the con ditional probabilities of for two variables (S   and H). How many  more 
+(independent)  probabilit y values do we need to specify the joint probability distribution of this BN ? Hint: think 
+about the remaining vari ables. 
+Answer :              
+ 
+17) [8 marks] Suppose we have a singly connected Bayesian Network as shown in Figure (a) below. There are four 
+variables: X, Y, Z, and W. The conditional probabilities are given in Figure (a), and the marginal probabilities of 
+the four variables are given in Figure (b).  Now , suppose we get evidence that z1 is true, i.e., P( z1) = 1.  Find the 
+posterior probabilities of y1 and x1 (i.e., P*(y1) and P*(x1)).  W P(H | W)  
+T 0.2 
+F 0.5 
+
+7 
+  
+Answers:  
+Posterior probability of y1 or P*(y1) is :  
+Posterior probability of x1 or P*(x1) is :  
+ 
+ 
+18) [2 marks ] A Bayesian Network factorizes the joint probability distribution into conditional probabilities of each 
+variable given its parents. How do you return to the explicit joint distribution from this factorization?  Circle the 
+right option.  
+ 
+a) Add the conditional probabilities of all variables given their parents.  
+b) Multiply the conditional probabilities of each variable given its parents.  
+c) Sum the probabilities of all nodes ignoring their parents.  
+d) Multiply only the marginal probabilities of each variable.  
+ 

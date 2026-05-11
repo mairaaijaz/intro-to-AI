@@ -3,10 +3,11 @@ import Navbar from '@/components/Navbar';
 import { useStudentData } from '@/hooks/useStudentData';
 import { predictRecall, lagDays, predictHalfLife } from '@/lib/hlr';
 import {
-  LineChart, Line, AreaChart, Area, BarChart, Bar,
+  LineChart, Line, AreaChart, Area, BarChart, Bar, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
+import { useState, useEffect } from 'react';
 
 import { useSettings } from '@/hooks/useSettings';
 
@@ -25,6 +26,7 @@ const LIGHT = {
 export default function AnalyticsPage() {
   const { data, loaded, resetData } = useStudentData();
   const { theme } = useSettings();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const chartColors = theme === 'dark' ? DARK : LIGHT;
 
   if (!loaded || !data) return (
@@ -198,9 +200,13 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                 <XAxis dataKey="category" stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 11, angle: -35, textAnchor: 'end' }} interval={0} />
                 <YAxis stroke={chartColors.text} tick={{ fill: chartColors.text, fontSize: 12 }} domain={[0, 100]} tickFormatter={v => v + '%'} />
-                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} />
+                <Tooltip contentStyle={chartColors.tooltip} formatter={(v: any, _: any, p: any) => [`${v}% (n=${p.payload.attempts})`, 'Accuracy']} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" />
-                <Bar dataKey="accuracy" fill="#f97316" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="accuracy" radius={[6, 6, 0, 0]} onClick={(data) => setSelectedCategory(data.category)} cursor="pointer">
+                  {categoryData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.category === selectedCategory ? '#fb923c' : '#f97316'} opacity={selectedCategory && entry.category !== selectedCategory ? 0.6 : 1} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </section>
@@ -209,48 +215,67 @@ export default function AnalyticsPage() {
         {/* ── Word Stats by Category ────────────────────────────────────────── */}
         {categoryData.length > 0 && (
           <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
-            <h2 style={{ fontWeight: 700, marginBottom: '20px', fontSize: '1.1rem' }}>Word Performance by Category</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              {categoryData.map(c => (
-                <div key={c.category} style={{ border: `1px solid ${chartColors.grid}`, borderRadius: '12px', overflow: 'hidden' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px 20px', borderBottom: `1px solid ${chartColors.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{c.category}</h3>
-                    <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
-                      <span><span style={{ color: 'var(--muted)' }}>Accuracy:</span> {c.accuracy}%</span>
-                      <span><span style={{ color: 'var(--muted)' }}>Attempts:</span> {c.attempts}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+              <h2 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Word Performance by Category</h2>
+              <select 
+                value={selectedCategory || ''} 
+                onChange={e => setSelectedCategory(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `1px solid ${chartColors.grid}`, cursor: 'pointer', outline: 'none' }}
+              >
+                <option value="" disabled>Select a category...</option>
+                {categoryData.map(c => (
+                  <option key={c.category} value={c.category}>{c.category}</option>
+                ))}
+              </select>
+            </div>
+            
+            {selectedCategory ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                {categoryData.filter(c => c.category === selectedCategory).map(c => (
+                  <div key={c.category} style={{ border: `1px solid ${chartColors.grid}`, borderRadius: '12px', overflow: 'hidden' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px 20px', borderBottom: `1px solid ${chartColors.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{c.category}</h3>
+                      <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
+                        <span><span style={{ color: 'var(--muted)' }}>Accuracy:</span> {c.accuracy}%</span>
+                        <span><span style={{ color: 'var(--muted)' }}>Attempts:</span> {c.attempts}</span>
+                      </div>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                        <thead>
+                          <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: `1px solid ${chartColors.grid}` }}>
+                            <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Arabic</th>
+                            <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Transliteration</th>
+                            <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Accuracy</th>
+                            <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Half-life</th>
+                            <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Attempts</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {c.words.map(w => (
+                            <tr key={w.id} style={{ borderBottom: `1px solid ${chartColors.grid}` }}>
+                              <td style={{ padding: '12px 20px', fontSize: '1.1rem', fontFamily: 'var(--font-arabic)' }}>{w.arabic}</td>
+                              <td style={{ padding: '12px 20px', color: 'var(--text)' }}>{w.translit}</td>
+                              <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? (w.accuracy >= 80 ? '#34d399' : w.accuracy < 50 ? '#f87171' : 'var(--text)') : 'var(--muted)' }}>
+                                {w.nTotal > 0 ? `${w.accuracy}%` : '—'}
+                              </td>
+                              <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? '#38bdf8' : 'var(--muted)' }}>
+                                {w.nTotal > 0 ? `${w.halfLife.toFixed(1)}d` : '—'}
+                              </td>
+                              <td style={{ padding: '12px 20px', textAlign: 'right', color: 'var(--muted)' }}>{w.attempts}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                      <thead>
-                        <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: `1px solid ${chartColors.grid}` }}>
-                          <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Arabic</th>
-                          <th style={{ padding: '12px 20px', textAlign: 'left', fontWeight: 600, color: 'var(--muted)' }}>Transliteration</th>
-                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Accuracy</th>
-                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Half-life</th>
-                          <th style={{ padding: '12px 20px', textAlign: 'right', fontWeight: 600, color: 'var(--muted)' }}>Attempts</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {c.words.map(w => (
-                          <tr key={w.id} style={{ borderBottom: `1px solid ${chartColors.grid}` }}>
-                            <td style={{ padding: '12px 20px', fontSize: '1.1rem', fontFamily: 'var(--font-arabic)' }}>{w.arabic}</td>
-                            <td style={{ padding: '12px 20px', color: 'var(--text)' }}>{w.translit}</td>
-                            <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? (w.accuracy >= 80 ? '#34d399' : w.accuracy < 50 ? '#f87171' : 'var(--text)') : 'var(--muted)' }}>
-                              {w.nTotal > 0 ? `${w.accuracy}%` : '—'}
-                            </td>
-                            <td style={{ padding: '12px 20px', textAlign: 'right', color: w.nTotal > 0 ? '#38bdf8' : 'var(--muted)' }}>
-                              {w.nTotal > 0 ? `${w.halfLife.toFixed(1)}d` : '—'}
-                            </td>
-                            <td style={{ padding: '12px 20px', textAlign: 'right', color: 'var(--muted)' }}>{w.attempts}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: `1px dashed ${chartColors.grid}` }}>
+                Click on a category bar in the chart above or select from the dropdown to view detailed word statistics.
+              </div>
+            )}
           </section>
         )}
 
