@@ -194,7 +194,10 @@ export default function AnalyticsPage() {
         {/* ── Category accuracy ─────────────────────────────────────────────── */}
         {categoryData.some(c => c.attempts > 0) && (
           <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
-            <h2 style={{ fontWeight: 700, marginBottom: '20px', fontSize: '1.1rem' }}>Accuracy by Category</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Accuracy by Category</h2>
+              <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Click a bar to see word details</span>
+            </div>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={categoryData} margin={{ bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
@@ -209,38 +212,28 @@ export default function AnalyticsPage() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </section>
-        )}
 
-        {/* ── Word Stats by Category ────────────────────────────────────────── */}
-        {categoryData.length > 0 && (
-          <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-              <h2 style={{ fontWeight: 700, margin: 0, fontSize: '1.1rem' }}>Word Performance by Category</h2>
-              <select 
-                value={selectedCategory || ''} 
-                onChange={e => setSelectedCategory(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `1px solid ${chartColors.grid}`, cursor: 'pointer', outline: 'none' }}
-              >
-                <option value="" disabled>Select a category...</option>
-                {categoryData.map(c => (
-                  <option key={c.category} value={c.category}>{c.category}</option>
-                ))}
-              </select>
-            </div>
-            
-            {selectedCategory ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Word details shown ONLY when a category is selected */}
+            {selectedCategory && (
+              <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: `1px solid ${chartColors.grid}` }}>
                 {categoryData.filter(c => c.category === selectedCategory).map(c => (
-                  <div key={c.category} style={{ border: `1px solid ${chartColors.grid}`, borderRadius: '12px', overflow: 'hidden' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px 20px', borderBottom: `1px solid ${chartColors.grid}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                      <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>{c.category}</h3>
-                      <div style={{ display: 'flex', gap: '16px', fontSize: '0.85rem' }}>
+                  <div key={c.category}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>
+                        <span style={{ color: '#fb923c' }}>{c.category}</span> Details
+                      </h3>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '0.85rem' }}>
                         <span><span style={{ color: 'var(--muted)' }}>Accuracy:</span> {c.accuracy}%</span>
                         <span><span style={{ color: 'var(--muted)' }}>Attempts:</span> {c.attempts}</span>
+                        <button 
+                          onClick={() => setSelectedCategory(null)} 
+                          style={{ padding: '4px 12px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `1px solid ${chartColors.grid}`, cursor: 'pointer' }}
+                        >
+                          Close
+                        </button>
                       </div>
                     </div>
-                    <div style={{ overflowX: 'auto' }}>
+                    <div style={{ overflowX: 'auto', border: `1px solid ${chartColors.grid}`, borderRadius: '12px' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                         <thead>
                           <tr style={{ background: 'rgba(255,255,255,0.01)', borderBottom: `1px solid ${chartColors.grid}` }}>
@@ -270,10 +263,6 @@ export default function AnalyticsPage() {
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: `1px dashed ${chartColors.grid}` }}>
-                Click on a category bar in the chart above or select from the dropdown to view detailed word statistics.
               </div>
             )}
           </section>
