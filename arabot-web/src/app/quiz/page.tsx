@@ -20,7 +20,8 @@ export default function QuizPage() {
   const { showDiacritics } = useSettings();
 
   const [phase,       setPhase]       = useState<Phase>('setup');
-  const [sessionSize, setSessionSize] = useState(10);
+  const [sessionSize, setSessionSize] = useState<number | 'all'>(10);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [words,       setWords]       = useState<WordMemory[]>([]);
   const [idx,         setIdx]         = useState(0);
   const [answer,      setAnswer]      = useState('');
@@ -28,13 +29,27 @@ export default function QuizPage() {
   const [lastResult,  setLastResult]  = useState<{ recalled: boolean; correct: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const categories = data ? Array.from(new Set(Object.values(data.memories).map(w => w.category))).sort() : [];
+
   useEffect(() => {
     if (phase === 'question') inputRef.current?.focus();
   }, [phase, idx]);
 
   function startSession() {
     if (!data) return;
-    const selected = selectWords(data.memories, data.theta, sessionSize, 0.3);
+    
+    let pool = data.memories;
+    if (selectedCategory !== 'all') {
+      pool = Object.fromEntries(Object.entries(data.memories).filter(([_, w]) => w.category === selectedCategory));
+    }
+    const poolSize = Object.keys(pool).length;
+    if (poolSize === 0) {
+      alert('No words found in this category.');
+      return;
+    }
+    const actualSize = sessionSize === 'all' ? poolSize : Math.min(sessionSize, poolSize);
+
+    const selected = selectWords(pool, data.theta, actualSize, 0.3);
     setWords(selected);
     setIdx(0);
     setResults([]);
@@ -113,13 +128,29 @@ export default function QuizPage() {
             </p>
 
             <div className="glass" style={{ padding: '32px', marginBottom: '24px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontWeight: 600, marginBottom: '16px' }}>
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={e => setSelectedCategory(e.target.value)}
+                  style={{ padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `2px solid var(--border)`, cursor: 'pointer', outline: 'none', width: '100%', fontSize: '1rem' }}
+                >
+                  <option value="all">Random (All Categories)</option>
+                  {categories.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
               <label style={{ display: 'block', fontWeight: 600, marginBottom: '16px' }}>
                 Session size
               </label>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {[5, 10, 15, 20].map(n => (
+                {[5, 10, 20, 'all'].map(n => (
                   <button key={n}
-                    onClick={() => setSessionSize(n)}
+                    onClick={() => setSessionSize(n as any)}
                     style={{
                       padding: '10px 24px',
                       borderRadius: '10px',
@@ -128,7 +159,7 @@ export default function QuizPage() {
                       color: sessionSize === n ? 'var(--text)' : 'var(--muted)',
                       fontWeight: 600, fontSize: '1rem', cursor: 'pointer', transition: 'all 0.15s',
                     }}>
-                    {n} words
+                    {n === 'all' ? 'All words' : `${n} words`}
                   </button>
                 ))}
               </div>
