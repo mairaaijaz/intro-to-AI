@@ -197,7 +197,13 @@ export default function AnalyticsPage() {
                 <ReferenceLine y={80} stroke="#34d399" strokeDasharray="4 4" />
                 <Bar dataKey="accuracy" radius={[6, 6, 0, 0]} onClick={(data: any) => setSelectedCategory(data?.payload?.category || data?.category)} cursor="pointer">
                   {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.category === selectedCategory ? '#fb923c' : '#f97316'} opacity={selectedCategory && entry.category !== selectedCategory ? 0.6 : 1} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.category === selectedCategory ? '#ff6b6b' : '#f97316'} 
+                      opacity={selectedCategory && entry.category !== selectedCategory ? 0.6 : 1}
+                      stroke={entry.category === selectedCategory ? '#1a1a2e' : 'none'}
+                      strokeWidth={entry.category === selectedCategory ? 2 : 0}
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -210,7 +216,7 @@ export default function AnalyticsPage() {
                   <div key={c.category}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
                       <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600 }}>
-                        <span style={{ color: '#fb923c' }}>{c.category}</span> Details
+                        <span style={{ color: '#ff6b6b' }}>{c.category}</span> Details
                       </h3>
                       <div style={{ display: 'flex', gap: '16px', alignItems: 'center', fontSize: '0.85rem' }}>
                         <span><span style={{ color: 'var(--muted)' }}>Accuracy:</span> {c.accuracy}%</span>

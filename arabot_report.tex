@@ -1,0 +1,93 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{titlesec}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\title{\textbf{Arabot: Intelligent Arabic Vocabulary Learning}\\ \large Project Report}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. UI: Look and Feel (10 Marks)}
+\subsection*{1.1 Look and Feel [5 marks]}
+Arabot features a modern, sleek, and intuitive user interface built with Next.js and React. The design leverages "glassmorphism" (translucent, frosted-glass effect cards) and animated elements such as floating orbs, fade-ins, and pulse-glow buttons to maximize engagement. The application uses a visually appealing color palette with high contrast for readability and a dynamic progress tracking system. Visual elements such as progress bars, confetti animations upon correct answers and level-ups, and clean typography provide immediate feedback. This creates a gamified and polished experience that encourages continued learning.
+
+\subsection*{1.2 Literature Citation for Demographic Suitability, Engagement, and Retention [5 marks]}
+The UI decisions in Arabot are grounded in established Human-Computer Interaction (HCI) literature. Fogg’s Behavior Model demonstrates that high motivation—facilitated by an aesthetically pleasing and easy-to-use interface like Arabot's glassmorphism—is crucial for user engagement. Furthermore, Tractinsky et al. demonstrated the "what is beautiful is usable" phenomenon, suggesting that an aesthetically pleasing interface fosters a positive emotional response, directly increasing return rates.
+\begin{itemize}[label={--}]
+    \item \textbf{Engagement Citation:} Fogg, B. J. (2009). \textit{A behavior model for persuasive design.} In Proceedings of the 4th international conference on Persuasive technology.
+    \item \textbf{Retention/UI Citation:} Tractinsky, N., Katz, A. S., \& Ikar, D. (2000). \textit{What is beautiful is usable.} Interacting with computers, 13(1), 127-145.
+\end{itemize}
+
+\section*{2. Choice of Language (2 Marks)}
+\subsection*{2.1 Literature-Backed Defense Regarding Importance and Choice of Language [2 marks]}
+The choice of Arabic for this project is driven by both its global significance and its distinct cognitive benefits. Arabic is a critical language with high geopolitical and economic demand, recognized as one of the six official languages of the United Nations. Beyond its practical demand, learning Arabic presents unique cognitive advantages for learners accustomed to Latin scripts due to its right-to-left orthography and root-based morphological structure. Research highlights that acquiring a structurally distinct language enhances neuroplasticity.
+\begin{itemize}[label={--}]
+    \item \textbf{Importance \& Demand Citation:} Ryding, K. C. (2006). \textit{Teaching and Learning Arabic as a Foreign Language.} Amsterdam University Press.
+    \item \textbf{Cognitive Impact Citation:} Bialystok, E., Craik, F. I., \& Luk, G. (2012). \textit{Bilingualism: consequences for mind and brain.} Trends in cognitive sciences, 16(4), 240-250.
+\end{itemize}
+
+\section*{3. Specific Components (36 Marks)}
+
+\subsection*{3.1 Home Page Simplicity and Attractiveness (3 Marks)}
+\textbf{Description [2 marks]:} The home page is designed with strict minimalism, featuring a centralized hero section with a clear call-to-action ("Play Now! \textsuperscript{🎮}") and key user statistics (Words Found, Super Mastered). It is devoid of unnecessary visual clutter, ensuring the user is immediately directed to the core functionality. \\
+\textbf{Cited reference for quantitative/qualitative measurement [1 mark]:}
+\begin{itemize}[label={--}]
+    \item Tullis, T., \& Albert, B. (2013). \textit{Measuring the user experience: collecting, analyzing, and presenting usability metrics.} Morgan Kaufmann. (Demonstrates measuring simplicity quantitatively using tools like the System Usability Scale).
+\end{itemize}
+
+\subsection*{3.2 Cognitive Load / Simplicity of Navigation (3 Marks)}
+\textbf{Description [2 marks]:} Navigation relies on a persistent, clearly labeled navbar and a straightforward level selection grid grouped by tiers (e.g., Beginner, My World). This intuitive routing reduces extraneous cognitive load, freeing up mental resources for the intrinsic cognitive load of learning vocabulary. \\
+\textbf{Cited reference of related experiments [1 mark]:}
+\begin{itemize}[label={--}]
+    \item Sweller, J. (1988). \textit{Cognitive load during problem solving: Effects on learning.} Cognitive science, 12(2), 257-285. (Foundational experiment establishing that reducing extraneous cognitive load significantly improves learning outcomes).
+\end{itemize}
+
+\subsection*{3.3 Grouping of Words (7 Marks)}
+\textbf{Description [5 marks]:} The project's dataset (\texttt{arabic\_words.py}) contains 200 words meticulously grouped into 20 semantic categories (e.g., "Family", "Food", "Technology", "Emotions"). The quizzes are structured to present words within these themes, limiting the session size to prevent cognitive overload and maximize short-term memory encoding. \\
+\textbf{Cited reference for experiments on word groupings [2 marks]:}
+\begin{itemize}[label={--}]
+    \item \textbf{Size of Group:} Miller, G. A. (1956). \textit{The magical number seven, plus or minus two: Some limits on our capacity for processing information.} Psychological review, 63(2), 81.
+    \item \textbf{Grouping \& Recall:} Tinkham, T. (1997). \textit{The effects of semantic and thematic clustering on the learning of second language vocabulary.} Second Language Research, 13(2), 138-163.
+\end{itemize}
+
+\subsection*{3.4 Gradual Increase in Difficulty (2 Marks)}
+\textbf{Description [1 mark]:} Arabot employs a progressive difficulty curve through a 20-level unlocking system. Learners start at Level 1 (Greetings/Numbers) and must achieve a minimum of 80\% accuracy in a session to unlock the next level, ensuring foundational mastery before introducing complex vocabulary. \\
+\textbf{Citation for evidence of gradual increased difficulty [1 mark]:}
+\begin{itemize}[label={--}]
+    \item Krashen, S. (1982). \textit{Principles and Practice in Second Language Acquisition.} Pergamon Press. (Proposes the "i+1" Input Hypothesis).
+\end{itemize}
+
+\subsection*{3.5 Algorithm Used for Half-Life Memory Prediction (10 Marks)}
+\textbf{Description [5 marks]:} Arabot implements the Half-Life Regression (HLR) algorithm in \texttt{hlr\_model.py} to predict memory decay. It utilizes the Ebbinghaus forgetting curve formula ($p = 2^{-\Delta/h}$) and estimates the half-life ($h$) using historical interaction data. The feature vector includes a bias term, the square root of correct answers, and the square root of incorrect answers, continuously optimized via Stochastic Gradient Descent (SGD). \\
+\textbf{Citation for where/when it was last used, and latest algorithms [5 marks]:}
+\begin{itemize}[label={--}]
+    \item \textbf{HLR Origin \& Use:} Settles, B., \& Meeder, B. (2016). \textit{A Trainable Spaced Repetition Model for Language Learning.} In Proceedings of the 54th Annual Meeting of the ACL. (Developed and implemented by \textbf{Duolingo} in 2016).
+    \item \textbf{Latest Algorithm Citation:} Ye, J. et al. (2022). \textit{A Stochastic Shortest Path Algorithm for Optimizing Spaced Repetition Scheduling.} Proceedings of the 28th ACM SIGKDD Conference. The \textbf{Free Spaced Repetition Scheduler (FSRS)} uses a Difficulty, Stability, and Retrievability (DSR) model and has recently replaced older algorithms as the default engine in major platforms like \textbf{Anki} (late 2023).
+\end{itemize}
+
+\subsection*{3.6 Analytics (11 Marks)}
+Arabot features a comprehensive analytics pipeline (\texttt{analytics.py}) that generates detailed visual insights:
+\begin{itemize}[label={--}]
+    \item \textbf{By group [3 marks]:} The system generates a "Vocabulary Mastery by Category" heatmap (bar chart) displaying accuracy percentages and total attempts broken down by the 20 thematic categories.
+    \item \textbf{By word [3 marks]:} Granular word-level statistics are plotted via individual Ebbinghaus Forgetting Curves for specific words, and a histogram showing the distribution of recall probabilities across all 200 words.
+    \item \textbf{Visual aids used [3 marks]:} The system utilizes Matplotlib to generate multiple charts: Line graphs (Half-Life Growth over sessions, Forgetting curves), Bar charts/Heatmaps (Category mastery), and Histograms (Recall distribution).
+    \item \textbf{Citation for UI of analytics [2 marks]:} Verbert, K. et al. (2013). \textit{Learning analytics dashboard applications.} American Behavioral Scientist, 57(10), 1500-1509. (Demonstrates that visual learning dashboards promote self-reflection and improve achievement).
+\end{itemize}
+
+\section*{4. Proposed Improvements (2 Marks)}
+\begin{enumerate}
+    \item \textbf{Integration of Advanced Spaced Repetition Models:} Upgrading the predictive engine from HLR to the modern FSRS model to provide even more personalized forgetting curves.
+    \item \textbf{Voice Recognition Integration:} Adding a speech-to-text API to evaluate Arabic pronunciation, expanding Arabot from a semantic recall tool to a comprehensive phonological learning platform.
+\end{enumerate}
+
+\end{document}

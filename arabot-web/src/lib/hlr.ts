@@ -104,7 +104,7 @@ export function sgdUpdate(
   const hTilde= empiricalHalfLife(pObsForH, Math.max(lagDays, 1e-5));
 
   // Gradient components
-  const pGradCommon = 2 * (pHat - pObs) * (-LN2 * (lagDays / hHat) * LN2 * pHat);
+  const pGradCommon = 2 * (pHat - pObs) * (LN2 * (lagDays / hHat) * LN2 * pHat);
   const hGradCommon = 2 * ALPHA * (hHat - hTilde) * (LN2 * hHat);
   const total = pGradCommon + hGradCommon;
 

@@ -109,7 +109,7 @@ class HLRModel:
 
         # Gradient of p-loss w.r.t. θ_k:  2(p̂-p_obs) · dp̂/dθ_k
         # dp̂/dθ_k = -ln2 * (Δ/h) * ln2 * x_k * p̂   (chain rule)
-        p_grad_common = 2.0 * (p_hat - p_obs) * (-ln2 * (lag_days / h_hat) * ln2 * p_hat)
+        p_grad_common = 2.0 * (p_hat - p_obs) * (ln2 * (lag_days / h_hat) * ln2 * p_hat)
 
         # Gradient of h-loss w.r.t. θ_k:  2α(ĥ-h̃) · dh/dθ_k
         # dh/dθ_k = ln2 * h_hat * x_k
