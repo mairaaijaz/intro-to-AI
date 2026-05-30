@@ -22,6 +22,82 @@ const CONFETTI_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff9f43','#c08
 
 function randomFrom<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
+function expandContractions(str: string): string {
+  return str
+    .replace(/\byou're\b/g, 'you are')
+    .replace(/\byou\s+re\b/g, 'you are')
+    .replace(/\bdon't\b/g, 'do not')
+    .replace(/\bit's\b/g, 'it is')
+    .replace(/\bwon't\b/g, 'will not');
+}
+
+function getCleanWords(str: string): string[] {
+  const expanded = expandContractions(str.toLowerCase());
+  const words = expanded
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, ' ')
+    .split(/\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+  const filtered = words.filter(w => w !== 'to' && w !== 'the' && w !== 'a' && w !== 'an');
+  return filtered.length > 0 ? filtered : words;
+}
+
+function getEditDistance(a: string, b: string): number {
+  const matrix: number[][] = [];
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+function isFuzzyMatch(user: string, target: string): boolean {
+  const userWords = getCleanWords(user);
+  const targetWords = getCleanWords(target);
+  
+  if (userWords.length === 0 || targetWords.length === 0) return false;
+
+  if (userWords.join(' ') === targetWords.join(' ')) return true;
+
+  let matchCount = 0;
+  for (const tw of targetWords) {
+    if (userWords.includes(tw)) {
+      matchCount++;
+    }
+  }
+
+  const coverage = matchCount / targetWords.length;
+  
+  if (targetWords.length === 1) {
+    const tw = targetWords[0];
+    const uw = userWords[0];
+    if (tw === uw) return true;
+    if (tw.length >= 4 && getEditDistance(tw, uw) <= 1) return true;
+    return false;
+  }
+  
+  if (targetWords.length === 2) {
+    return matchCount === 2;
+  }
+  
+  return coverage >= 0.65;
+}
+
 function useLocalLevelProgress() {
   const KEY = 'arabot_level_progress';
   const [maxUnlocked, setMaxUnlocked] = useState<number>(1);
@@ -95,13 +171,8 @@ export default function QuizPage() {
   function submitAnswer() {
     if (!data || !words[idx]) return;
     const wm = words[idx];
-    const userTrimmed = answer.trim().toLowerCase();
-    const correctAnswers = wm.english.toLowerCase().split(/[\/,]/).map(s => s.trim());
-    const recalled = correctAnswers.some(a => {
-      if (userTrimmed === a) return true;
-      if (userTrimmed.length >= Math.min(3, a.length - 1)) return userTrimmed.includes(a) || a.includes(userTrimmed);
-      return false;
-    }) && userTrimmed.length > 0;
+    const correctAnswers = wm.english.split(/[\/,]/).map(s => s.trim());
+    const recalled = correctAnswers.some(a => isFuzzyMatch(answer, a));
 
     recordAttempt(wm.wordId, recalled);
     setResults(prev => [...prev, { word: wm, recalled, userAnswer: answer.trim() }]);

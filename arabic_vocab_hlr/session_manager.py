@@ -55,6 +55,71 @@ def _default_stats():
     }
 
 
+def expand_contractions(text: str) -> str:
+    text = text.replace("you're", "you are")
+    text = text.replace("you re", "you are")
+    text = text.replace("don't", "do not")
+    text = text.replace("it's", "it is")
+    text = text.replace("won't", "will not")
+    return text
+
+
+def get_clean_words(text: str) -> list:
+    expanded = expand_contractions(text.lower())
+    import re
+    cleaned = re.sub(r'[.,\/#!$%\^&\*;:{}=\-_`~()?]', ' ', expanded)
+    words = [w.strip() for w in cleaned.split() if w.strip()]
+    filtered = [w for w in words if w not in {"to", "the", "a", "an"}]
+    return filtered if filtered else words
+
+
+def get_edit_distance(a: str, b: str) -> int:
+    if len(a) < len(b):
+        return get_edit_distance(b, a)
+    if not b:
+        return len(a)
+    
+    previous_row = range(len(b) + 1)
+    for i, c1 in enumerate(a):
+        current_row = [i + 1]
+        for j, c2 in enumerate(b):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+        
+    return previous_row[-1]
+
+
+def is_fuzzy_match(user: str, target: str) -> bool:
+    user_words = get_clean_words(user)
+    target_words = get_clean_words(target)
+    
+    if not user_words or not target_words:
+        return False
+        
+    if " ".join(user_words) == " ".join(target_words):
+        return True
+        
+    match_count = sum(1 for tw in target_words if tw in user_words)
+    coverage = match_count / len(target_words)
+    
+    if len(target_words) == 1:
+        tw = target_words[0]
+        uw = user_words[0]
+        if tw == uw:
+            return True
+        if len(tw) >= 4 and get_edit_distance(tw, uw) <= 1:
+            return True
+        return False
+        
+    if len(target_words) == 2:
+        return match_count == 2
+        
+    return coverage >= 0.65
+
+
 def run_quiz_session(model, memories, stats, session_size=10):
     """
     Runs an interactive quiz session in the terminal.
@@ -84,10 +149,9 @@ def run_quiz_session(model, memories, stats, session_size=10):
         print(f"  [{i}/{len(words)}]  Arabic: {wm.arabic}  ({wm.translit})")
         print(f"          Category: {wm.category}  | predicted recall: {p:.0%}  | half-life: {h:.1f}d")
 
-        answer = input("         Your answer: ").strip().lower()
-        correct_answers = [syn.strip().lower() for syn in wm.english.split("/")]
-        recalled = any(answer == a or answer in a or a in answer
-                       for a in correct_answers)
+        answer = input("         Your answer: ")
+        correct_answers = [syn.strip() for syn in wm.english.split("/")]
+        recalled = any(is_fuzzy_match(answer, a) for a in correct_answers)
 
         if recalled:
             print(f"  ✅  Correct! '{wm.english}'\n")
