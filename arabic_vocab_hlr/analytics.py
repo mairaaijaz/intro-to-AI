@@ -211,7 +211,7 @@ def plot_recall_distribution(data, outdir="."):
                label=f"Mean p = {np.mean(probs):.2f}")
     ax.set_xlabel("Predicted Recall Probability at 1-day lag", fontsize=12)
     ax.set_ylabel("Number of Words", fontsize=12)
-    ax.set_title("Distribution of Recall Probabilities (200 Arabic Words)", fontsize=14, fontweight="bold")
+    ax.set_title(f"Distribution of Recall Probabilities ({len(probs)} Arabic Words)", fontsize=14, fontweight="bold")
     ax.legend()
     ax.grid(alpha=0.3)
     fig.tight_layout()
