@@ -18,6 +18,7 @@ const chartColors = {
 export default function AnalyticsPage() {
   const { data, loaded, resetData } = useStudentData();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [curveCategory, setCurveCategory] = useState<string>('All');
 
   if (!loaded || !data) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -74,7 +75,9 @@ export default function AnalyticsPage() {
     .sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts);
 
   // ── Forgetting curves (up to 8 most recently reviewed words) ────────────────
-  const sample = [...seen]
+  const curveCategories = ['All', ...Array.from(new Set(seen.map(w => w.category)))].sort();
+  const curveSeen = curveCategory === 'All' ? seen : seen.filter(w => w.category === curveCategory);
+  const sample = [...curveSeen]
     .sort((a, b) => new Date(b.lastSeen || 0).getTime() - new Date(a.lastSeen || 0).getTime())
     .slice(0, 8);
   const forgetData = Array.from({ length: 31 }, (_, d) => {
@@ -269,10 +272,23 @@ export default function AnalyticsPage() {
         {/* ── Forgetting curves ─────────────────────────────────────────────── */}
         {sample.length > 0 && (
           <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
-            <h2 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.1rem' }}>Ebbinghaus Forgetting Curves</h2>
-            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: '20px' }}>
-              Showing up to 8 most recently reviewed words. p(t) = 2^(−t/h)
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.1rem' }}>Ebbinghaus Forgetting Curves</h2>
+                <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0 }}>
+                  Showing up to 8 most recently reviewed words. p(t) = 2^(−t/h)
+                </p>
+              </div>
+              <select
+                value={curveCategory}
+                onChange={(e) => setCurveCategory(e.target.value)}
+                style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `1px solid ${chartColors.grid}`, padding: '6px 12px', borderRadius: '8px', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
+              >
+                {curveCategories.map(c => (
+                  <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c}</option>
+                ))}
+              </select>
+            </div>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={forgetData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
