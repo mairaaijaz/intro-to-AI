@@ -285,7 +285,7 @@ export default function AnalyticsPage() {
                 style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: `1px solid ${chartColors.grid}`, padding: '6px 12px', borderRadius: '8px', outline: 'none', fontSize: '0.9rem', cursor: 'pointer' }}
               >
                 {curveCategories.map(c => (
-                  <option key={c} value={c} style={{ background: '#1a1a2e' }}>{c}</option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
