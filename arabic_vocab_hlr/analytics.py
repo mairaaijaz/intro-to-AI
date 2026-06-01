@@ -35,8 +35,9 @@ def plot_forgetting_curves(data, outdir="."):
     memories = data["memories"]
     theta    = data["model"]["theta"]
 
-    # Get all seen words
-    seen = [v for v in memories.values() if v["n_total"] > 0]
+    # Get up to 10 most recently seen words for a clean chart
+    seen = sorted([v for v in memories.values() if v["n_total"] > 0], 
+                  key=lambda x: x.get("last_seen") or "", reverse=True)[:10]
     if not seen:
         print("No seen words yet for forgetting curve.")
         return

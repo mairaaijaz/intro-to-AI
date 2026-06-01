@@ -73,8 +73,10 @@ export default function AnalyticsPage() {
     }))
     .sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts);
 
-  // ── Forgetting curves (all seen words) ───────────────────────────────
-  const sample = seen;
+  // ── Forgetting curves (up to 8 most recently reviewed words) ────────────────
+  const sample = [...seen]
+    .sort((a, b) => new Date(b.lastSeen || 0).getTime() - new Date(a.lastSeen || 0).getTime())
+    .slice(0, 8);
   const forgetData = Array.from({ length: 31 }, (_, d) => {
     const row: Record<string, number | string> = { day: d };
     for (const w of sample) {
@@ -269,7 +271,7 @@ export default function AnalyticsPage() {
           <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
             <h2 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.1rem' }}>Ebbinghaus Forgetting Curves</h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: '20px' }}>
-              p(t) = 2^(−t/h) — dashed lines show each word&apos;s half-life
+              Showing up to 8 most recently reviewed words. p(t) = 2^(−t/h)
             </p>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={forgetData}>
