@@ -35,8 +35,8 @@ def plot_forgetting_curves(data, outdir="."):
     memories = data["memories"]
     theta    = data["model"]["theta"]
 
-    # Pick up to 10 seen words
-    seen = [v for v in memories.values() if v["n_total"] > 0][:10]
+    # Get all seen words
+    seen = [v for v in memories.values() if v["n_total"] > 0]
     if not seen:
         print("No seen words yet for forgetting curve.")
         return
@@ -189,12 +189,14 @@ def plot_session_accuracy(data, outdir="."):
 
 # ─────────────────────────────────────────────────────────────────────────────
 def plot_recall_distribution(data, outdir="."):
-    """Histogram of current recall probabilities across all 200 words."""
+    """Histogram of current recall probabilities across seen words."""
     memories = data["memories"]
     theta    = data["model"]["theta"]
 
+    seen = [v for v in memories.values() if v["n_total"] > 0]
+
     probs = []
-    for wm in memories.values():
+    for wm in seen:
         nc, nw = wm["n_correct"], wm["n_wrong"]
         lag    = 1.0  # assume 1 day lag for snapshot
         dot    = (theta["bias"] * 1.0

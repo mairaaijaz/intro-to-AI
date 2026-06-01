@@ -73,8 +73,8 @@ export default function AnalyticsPage() {
     }))
     .sort((a, b) => b.accuracy - a.accuracy || b.attempts - a.attempts);
 
-  // ── Forgetting curves (sample 8 seen words) ───────────────────────────────
-  const sample = seen.slice(0, 8);
+  // ── Forgetting curves (all seen words) ───────────────────────────────
+  const sample = seen;
   const forgetData = Array.from({ length: 31 }, (_, d) => {
     const row: Record<string, number | string> = { day: d };
     for (const w of sample) {
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
     range: `${i * 10}–${(i + 1) * 10}%`,
     count: 0,
   }));
-  for (const w of memories) {
+  for (const w of seen) {
     const p = predictRecall(data.theta, w.nCorrect, w.nWrong, 1);
     const idx = Math.min(9, Math.floor(p * 10));
     buckets[idx].count++;
@@ -293,7 +293,7 @@ export default function AnalyticsPage() {
         <section className="glass" style={{ padding: '28px', marginBottom: '24px' }}>
           <h2 style={{ fontWeight: 700, marginBottom: '4px', fontSize: '1.1rem' }}>Recall Probability Distribution</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: '20px' }}>
-            Predicted recall at 1-day lag across all 200 words
+            Predicted recall at 1-day lag across {seen.length} seen words
           </p>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={buckets}>
